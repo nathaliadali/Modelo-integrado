@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>BCB – Tabela Rolling</title>
+<title>Modelo Agregado de Pequeno Porte – Banco Central</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Palanquin:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -143,7 +143,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
 <body>
 
 <div class="hdr">
-  <div><div class="title">🏦 BCB – Tabela Rolling</div>
+  <div><div class="title">Modelo Agregado de Pequeno Porte – Banco Central</div>
   <div class="sub">FRIs Modelo Agregado (RI Jun/2024) · Focus 2026 e 2027 separados · Horizonte rolante</div></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap">
     <span class="pill pill-cop" id="pill_cop">277ª Copom · HR: 3T2027 = 3,30%</span>
@@ -154,7 +154,8 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
 
 <div class="tabs">
   <button class="tab-btn active" onclick="goTab('main',this)">📋 Modelo Completo</button>
-  <button class="tab-btn" onclick="goTab('stress',this)">⚡ Stress Rápido</button>
+  <button class="tab-btn" onclick="goTab('stress',this)">📉 Modelo Suavizado</button>
+  <button class="tab-btn" onclick="goTab('selic',this)">📊 Cenários Selic</button>
 </div>
 
 <!-- ═══ ABA MODELO COMPLETO ═══ -->
@@ -167,8 +168,8 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title">⚡ Selic</div>
     <div class="g1">
       <div class="inp-cell">
-        <label>Selic ponto de partida — antes de jan/26 (% a.a.)</label>
-        <input type="number" id="s0" value="15" step="0.25" min="3" max="25" oninput="recalc()">
+        <label>Selic atual (% a.a.)</label>
+        <input type="number" id="s0" value="14.75" step="0.25" min="3" max="25" oninput="recalc()">
       </div>
     </div>
   </div>
@@ -177,9 +178,9 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title">🌍 Variáveis Externas</div>
     <div class="g2">
       <div class="inp-cell"><label>Câmbio<br>último Copom (R$)</label>
-        <input type="number" id="cx0" value="5.40" step="0.05" min="3" max="10" class="cop" oninput="recalc()"></div>
+        <input type="number" id="cx0" value="5.20" step="0.05" min="3" max="10" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Câmbio<br>atual (R$)</label>
-        <input type="number" id="cx1" value="5.25" step="0.05" min="3" max="10" oninput="recalc()"></div>
+        <input type="number" id="cx1" value="5.20" step="0.05" min="3" max="10" oninput="recalc()"></div>
       <div class="inp-cell"><label>IC-Br (USD)<br>último Copom</label>
         <input type="number" id="cm0" value="83" step="1" min="30" max="300" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>IC-Br (USD)<br>atual</label>
@@ -258,6 +259,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
 
   <button class="btn-calc" onclick="recalc()">▶ Recalcular</button>
   <button class="btn-reset" onclick="resetAll()">↺ Restaurar defaults</button>
+  <button class="btn-calc" onclick="updateFromBCB()" style="background:var(--bcb2);margin-top:8px">🔄 Atualizar dados do BCB</button>
 </div><!-- /left -->
 
 <div class="right">
@@ -272,14 +274,36 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
   </div>
 
   <div class="card">
-    <div class="card-hdr"><h3>📌 Cenário Selic Flat</h3><span>Útil para ver o nível mínimo necessário</span></div>
-    <div class="flat-box">
-      <label>Selic flat (% a.a.):</label>
-      <input type="number" id="flat_sel" value="14.75" step="0.25" min="5" max="20" oninput="calcFlat()">
-      <div class="flat-res">
-        <div class="frl">IPCA no horizonte próximo com Selic flat:</div>
-        <div class="frv" id="flat_val">—</div>
-        <div class="frs" id="flat_sub">—</div>
+    <div class="card-hdr"><h3>📌 Resultados & Cenário Selic Flat</h3><span>Útil para ver o nível mínimo necessário</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px">
+      <div class="rbox rbox-cop" style="margin:0">
+        <div class="rl">Último Copom</div>
+        <div class="rm" id="rc_mtg">277ª · T+6 (3T2027)</div>
+        <div class="rv" id="rc_val">3,30%</div>
+        <div class="rs">BCB oficial · meta 3,0%</div>
+      </div>
+      <div class="rbox" id="rp_block" style="margin:0;background:linear-gradient(135deg,var(--bcb),var(--bcb2))">
+        <div class="rl">Próxima Reunião</div>
+        <div class="rm" id="rp_mtg">—</div>
+        <div class="rv" id="rp_val">—</div>
+        <div class="rs" id="rp_sub">—</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="sn-box" style="flex:1">
+          <div class="sl">🎯 Selic flat p/ meta</div>
+          <div class="sv" id="sn_val">—</div>
+          <div class="ss" id="sn_sub" style="font-size:9px">—</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">Selic flat:</label>
+          <input type="number" id="flat_sel" value="14.75" step="0.25" min="5" max="20" oninput="calcFlat()"
+            style="width:80px;padding:5px 7px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;font-family:monospace;font-weight:700">
+          <div class="flat-res" style="flex:1;padding:6px 10px">
+            <div class="frl">IPCA flat:</div>
+            <div class="frv" id="flat_val" style="font-size:16px">—</div>
+            <div class="frs" id="flat_sub" style="font-size:9px">—</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -299,9 +323,9 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <b>FRIs (RI Jun/2024):</b>
       Selic [0,−0.10,−0.15,−0.22,−0.27,−0.29,−0.31,−0.30] p.p./100bps por trimestre ·
       Câmbio [0,0.14,0.34,0.58,0.96,0.72,0.52,0.38] p.p./10% desv. — pico 0,96 p.p. T+4 (Gráf.3b/texto RI Jun/24) ·
-      Brent [0,0.25,0.45,0.56,0.66,0.41,0.30,0.25] p.p./10% alta — pico 0,66 p.p. T+4 (Gráf.7b/texto RI Jun/24) ·
+      Brent [0,0.10,0.25,0.35,0.45,0.40,0.35,0.30] p.p./10% alta — pico 0,40 p.p. T+5 (texto BCB Jun/25) ·
       IC-Br [0,0.25,0.50,0.70,0.90,0.65,0.50,0.40] p.p./10% alta (Gráf.8) ·
-      Pass-throughs Focus fixos (BCB): F26 inércia 33% + expec 50% · F27 inércia 23% + expec 60%
+      Pass-throughs Focus (calibração própria): F26 inércia 30% p.p./p.p. · F27 expectativas 40% p.p./p.p.
     </div>
   </div>
 
@@ -309,68 +333,187 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
 </div><!-- /wrap -->
 </div><!-- /pg_main -->
 
-<!-- ═══ ABA STRESS RÁPIDO ═══ -->
+<!-- ═══ ABA MODELO SUAVIZADO ═══ -->
 <div id="pg_stress" style="display:none">
-<div class="stress-wrap">
+<div class="wrap">
+
+<div class="left">
+
+  <div>
+    <div class="sec-title">⚡ Selic</div>
+    <div class="g1">
+      <div class="inp-cell">
+        <label>Selic atual (% a.a.)</label>
+        <input type="number" id="sv_s0" value="14.75" step="0.25" min="3" max="25" oninput="recalcSuav()">
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-title">🌍 Variáveis Externas</div>
+    <div class="g2">
+      <div class="inp-cell"><label>Câmbio<br>último Copom (R$)</label>
+        <input type="number" id="sv_cx0" value="5.20" step="0.05" min="3" max="10" class="cop" oninput="recalcSuav()"></div>
+      <div class="inp-cell"><label>Câmbio<br>atual (R$)</label>
+        <input type="number" id="sv_cx1" value="5.20" step="0.05" min="3" max="10" oninput="recalcSuav()"></div>
+      <div class="inp-cell"><label>IC-Br (USD)<br>último Copom</label>
+        <input type="number" id="sv_cm0" value="83" step="1" min="30" max="300" class="cop" oninput="recalcSuav()"></div>
+      <div class="inp-cell"><label>IC-Br (USD)<br>atual</label>
+        <input type="number" id="sv_cm1" value="83" step="1" min="30" max="300" oninput="recalcSuav()"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-title">🛢️ Brent (FRI = 50% do modelo completo)</div>
+    <div class="g2">
+      <div class="inp-cell"><label>Brent (US$)<br>último Copom</label>
+        <input type="number" id="sv_br0" value="75" step="1" min="20" max="200" class="cop" oninput="recalcSuav()"></div>
+      <div class="inp-cell"><label>Brent (US$)<br>atual</label>
+        <input type="number" id="sv_br1" value="75" step="1" min="20" max="200" oninput="recalcSuav()"></div>
+    </div>
+    <div class="warn-box" style="margin-top:6px">📉 Neste modelo o pass-through do Brent é <b>50% menor</b> que no modelo completo — reflete incerteza sobre persistência do choque de petróleo.</div>
+  </div>
+
+  <div>
+    <div class="sec-title" style="color:var(--f26)">📊 Focus IPCA – Ano t-1 (2026)</div>
+    <div class="g2">
+      <div class="inp-cell"><label>Focus 2026<br>último Copom (%)</label>
+        <input type="number" id="sv_f26_0" value="4.10" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
+      <div class="inp-cell"><label>Focus 2026<br>atual (%)</label>
+        <input type="number" id="sv_f26_1" value="4.31" step="0.05" min="0" max="15" class="f26c" oninput="recalcSuav()"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-title" style="color:var(--f27)">📅 Focus IPCA – Ano t (2027)</div>
+    <div class="g2">
+      <div class="inp-cell"><label>Focus 2027<br>último Copom (%)</label>
+        <input type="number" id="sv_f27_0" value="3.80" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
+      <div class="inp-cell"><label>Focus 2027<br>atual (%)</label>
+        <input type="number" id="sv_f27_1" value="3.84" step="0.05" min="0" max="15" class="f27c" oninput="recalcSuav()"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-title">⚙️ Referência BCB</div>
+    <div class="g2">
+      <div class="inp-cell"><label>Projeção BCB<br>último Copom (%)</label>
+        <input type="number" id="sv_proj_cop" value="3.30" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
+      <div class="inp-cell"><label>Próxima reunião</label>
+        <select id="sv_prox_reuniao" onchange="recalcSuav()">
+          <option value="abr26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027">abr/26 (278ª) → HR: 4T2027</option>
+          <option value="jun26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027">jun/26 (279ª) → HR: 4T2027</option>
+          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (280ª) → HR: 1T2028</option>
+          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (281ª) → HR: 1T2028</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calc" onclick="recalcSuav()">▶ Recalcular</button>
+</div><!-- /left -->
+
+<div class="right">
 
   <div class="card">
     <div class="card-hdr">
-      <h3>⚡ Stress Rápido — Câmbio e Petróleo</h3>
-      <span>Selic, Focus e demais variáveis fixas no Copom · só impacto dessas duas variáveis</span>
+      <h3>💰 Trajetória Selic – bps por reunião</h3>
+      <span>Mesmo D[] do modelo completo · ★ HR Copom · ★★ próximo</span>
     </div>
-    <div style="padding:14px">
-      <div class="stress-inputs" style="margin-bottom:12px">
-        <div class="inp-cell"><label>Câmbio último Copom (R$)</label>
-          <input type="number" id="s_cx0" value="5.40" step="0.05" class="sinp-big cop" oninput="calcStress()"></div>
-        <div class="inp-cell"><label>Câmbio atual (R$)</label>
-          <input type="number" id="s_cx1" value="5.25" step="0.05" class="sinp-big" oninput="calcStress()"></div>
-        <div class="inp-cell"><label>Brent último Copom (US$)</label>
-          <input type="number" id="s_br0" value="75" step="1" class="sinp-big cop" oninput="calcStress()"></div>
-        <div class="inp-cell"><label>Brent atual (US$)</label>
-          <input type="number" id="s_br1" value="103" step="1" class="sinp-big" oninput="calcStress()"></div>
+    <div class="selic-wrap"><table class="st" id="sv_selic_tbl"></table></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr"><h3>📌 Resultados & Cenário Selic Flat</h3><span>Brent com pass-through 50% menor</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px">
+      <div class="rbox rbox-cop" style="margin:0">
+        <div class="rl">Último Copom</div>
+        <div class="rm" id="sv_rc_mtg2">277ª · T+6 (3T2027)</div>
+        <div class="rv" id="sv_rc_val2">3,30%</div>
+        <div class="rs">BCB oficial · meta 3,0%</div>
       </div>
-      <div class="stress-kpi">
-        <div class="skpi skpi-dark">
-          <div class="kl">Último Copom</div>
-          <div class="ks" id="s_cop_mtg">277ª · 3T2027</div>
-          <div class="kv">3,30%</div>
-          <div class="kd">BCB oficial</div>
+      <div class="rbox" id="sv_rp_block2" style="margin:0;background:linear-gradient(135deg,var(--bcb),var(--bcb2))">
+        <div class="rl">Próxima Reunião · Suavizado</div>
+        <div class="rm" id="sv_rp_mtg2">—</div>
+        <div class="rv" id="sv_rp_val2">—</div>
+        <div class="rs" id="sv_rp_sub2">—</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="sn-box" style="flex:1">
+          <div class="sl">🎯 Selic flat p/ meta</div>
+          <div class="sv" id="sv_sn_val">—</div>
+          <div class="ss" id="sv_sn_sub" style="font-size:9px">—</div>
         </div>
-        <div class="skpi skpi-dark" id="s_res_block">
-          <div class="kl">Projeção Atualizada</div>
-          <div class="ks" id="s_prox_mtg">4T2027</div>
-          <div class="kv" id="s_proj">—</div>
-          <div class="kd" id="s_vs_meta">—</div>
-        </div>
-        <div class="skpi skpi-light">
-          <div class="kl" style="color:var(--muted)">💵 Impacto Câmbio</div>
-          <div class="kv" id="s_imp_cx" style="font-size:20px">—</div>
-          <div class="kd" style="color:var(--muted)" id="s_dcx">—</div>
-        </div>
-        <div class="skpi skpi-light">
-          <div class="kl" style="color:var(--muted)">🛢️ Impacto Brent</div>
-          <div class="kv" id="s_imp_br" style="font-size:20px">—</div>
-          <div class="kd" style="color:var(--muted)" id="s_dbr">—</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">Selic flat:</label>
+          <input type="number" id="sv_flat_sel" value="14.75" step="0.25" min="5" max="20" oninput="calcFlatSuav()"
+            style="width:80px;padding:5px 7px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;font-family:monospace;font-weight:700">
+          <div class="flat-res" style="flex:1;padding:6px 10px">
+            <div class="frl">IPCA flat:</div>
+            <div class="frv" id="sv_flat_val" style="font-size:16px">—</div>
+            <div class="frs" id="sv_flat_sub" style="font-size:9px">—</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-hdr"><h3>📋 Trajetória Trimestral</h3><span>★ horizonte último Copom · ★★ próxima reunião</span></div>
-    <div class="res-wrap">
-      <table class="stress-tbl" id="s_tbl">
-        <thead><tr>
-          <th>Trimestre</th><th>IPCA Base BCB</th><th>IPCA Projetado</th>
-          <th>Imp. Câmbio</th><th>Imp. Brent</th><th>Δ vs. Meta</th>
-        </tr></thead>
-        <tbody id="s_tbl_body"></tbody>
-      </table>
+    <div class="card-hdr"><h3>🔍 Decomposição dos Impactos</h3><span>Brent com pass-through 50% menor que no modelo completo</span></div>
+    <div class="imp-wrap" id="sv_imp_wrap"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">
+      <h3>📋 Tabela Trimestral — Modelo Suavizado</h3>
+      <span>★ horizonte último Copom · ★★ próximo horizonte</span>
+    </div>
+    <div class="res-wrap"><table class="rt" id="sv_res_tbl"></table></div>
+  </div>
+
+</div><!-- /right -->
+</div><!-- /wrap -->
+</div><!-- /pg_stress -->
+
+<!-- ═══ ABA CENÁRIOS SELIC ═══ -->
+<div id="pg_selic" style="display:none;padding:16px;max-width:1100px;margin:0 auto">
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-hdr">
+      <h3>📊 Cenários de Trajetória Selic</h3>
+      <span>Base Copom fixo · demais variáveis iguais ao painel principal · edite os bps de cada cenário</span>
+    </div>
+    <div style="padding:12px 14px">
+
+      <div style="background:#f5f8fc;border-radius:7px;border:1px solid var(--border);padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;gap:16px">
+        <span style="font-size:11px;font-weight:700;color:var(--muted)">Projeção último Copom (base):</span>
+        <span style="font-size:20px;font-weight:900;font-family:monospace;color:var(--bcb2)" id="sc_proj_cop_lbl">—</span>
+        <span style="font-size:10px;color:var(--muted)" id="sc_proj_cop_sub">—</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="border-collapse:collapse;width:100%;font-size:11.5px" id="sc_input_tbl">
+          <thead>
+            <tr style="background:#eef2fa">
+              <th style="padding:5px 10px;text-align:left;color:var(--bcb);font-weight:800;border-bottom:2px solid var(--border)">Reunião</th>
+              <th style="padding:5px 10px;text-align:center;color:var(--bcb);font-weight:800;border-bottom:2px solid var(--border)">Tri</th>
+              <th style="padding:5px 10px;text-align:center;color:var(--bcb);font-weight:800;border-bottom:2px solid var(--border)">Base Copom<br><small>(bps)</small></th>
+              <th style="padding:5px 10px;text-align:center;background:#e8f9fc;color:var(--cyan);font-weight:800;border-bottom:3px solid var(--cyan)">Atual<br><small>(bps)</small></th>
+              <th style="padding:5px 10px;text-align:center;background:#e0f0f8;color:#0D6696;font-weight:800;border-bottom:3px solid #0D6696">Cenário 1<br><small>(bps)</small></th>
+              <th style="padding:5px 10px;text-align:center;background:#eaf4f9;color:#2E96BF;font-weight:800;border-bottom:3px solid #2E96BF">Cenário 2<br><small>(bps)</small></th>
+            </tr>
+          </thead>
+          <tbody id="sc_input_body"></tbody>
+          <tfoot id="sc_result_foot"></tfoot>
+        </table>
+      </div>
+      <div id="sc_outros_imp"></div>
+      <div style="margin-top:8px;text-align:right">
+        <button onclick="resetScenarios()" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:5px 12px;border-radius:5px;font-size:11px;cursor:pointer">↺ Resetar cenários</button>
+      </div>
     </div>
   </div>
 
-</div>
-</div><!-- /pg_stress -->
+</div><!-- /pg_selic -->
 
 <script>
 // ═══════════════════════════════════════════════════
@@ -384,9 +527,8 @@ const FRI = {
   // Gráfico 3b: resposta ao choque de 10% de depreciação cambial
   // Texto BCB confirma: pico ~0,96 p.p. no modelo agregado (acumulado 4T)
   cambio: [0, 0.14, 0.34, 0.58, 0.96, 0.72, 0.52, 0.38, 0.31, 0.28, 0.24],
-  // Gráfico 7b: resposta ao choque de 10% no preço do petróleo Brent
-  // Texto BCB: impacto máximo 0,66 p.p. após 4 trimestres
-  brent:  [0, 0.25, 0.45, 0.56, 0.66, 0.41, 0.30, 0.25, 0.20, 0.18, 0.15],
+  // FRI Brent atualizada (texto BCB Jun/25): pico em T+5 = 0,40 p.p. (choque 10% em USD)
+  brent:  [0, 0.10, 0.25, 0.35, 0.45, 0.40, 0.35, 0.30, 0.30, 0.28, 0.25],
   // Gráfico 8: resposta ao choque de 10% nas commodities (todas)
   comm:   [0, 0.25, 0.50, 0.70, 0.90, 0.65, 0.50, 0.40, 0.35, 0.30, 0.25],
 };
@@ -417,8 +559,8 @@ const REUN = [
 // abr=-50,jun=-50,ago=-50,set=-50,nov=-25,dez=-25 → fim-26=12,00%
 // jan/27=0,mar=-25,mai=-25,jun=-25,ago=-25,set=-12.5,nov=-37.5,dez=0 → fim-27=10,50%
 let D = [
-  [0,  0,-50,-50,-50,-50,-25,-25, 0,-25,-25,-25,-25,-12.5,-37.5,0],
-  [0,  0,-50,-50,-50,-50,-25,-25, 0,-25,-25,-25,-25,-12.5,-37.5,0],
+  [0,0,-50,-75,-25,-50,-25,-25,-25,0,-50,-25,-25,0,-37.5,-12.5],  // D[0] Base Copom
+  [0,0,-25,-50,-25,-50,-50,-25,-25,-25,-25,-25,-25,-25,-25,-25],  // D[1] Cenário Atual
 ];
 
 // ═══════════════════════════════════════════════════
@@ -467,7 +609,7 @@ function calcImpactos(s0, st, deltas1, hor){
   const impCm = (dCm/10)*fri(FRI.comm,hh);
 
   const dF26=st.f26_1-st.f26_0, dF27=st.f27_1-st.f27_0;
-  const impF26=dF26*(0.33+0.50), impF27=dF27*(0.23+0.60);
+  const impF26=dF26*0.30, impF27=dF27*0.40;
 
   const base = BCB_BASE[hor-1]??st.proj_cop;
   const total = impS+impCx+impBr+impCm+impF26+impF27;
@@ -495,7 +637,7 @@ function calcSelicNec(s0, st, hprox){
 // ═══════════════════════════════════════════════════
 // RENDER TABELA SELIC
 // ═══════════════════════════════════════════════════
-function buildSelicTable(s0, hcop, hprox){
+function buildSelicTable(s0, hcop, hprox, tblId='selic_tbl'){
   // Acumula jan/26 e mar/26 (passadas, índices 0 e 1)
   let l0=s0, l1=s0;
   l0=Math.max(4,Math.min(25,l0+D[0][0]/100)); l0=Math.max(4,Math.min(25,l0+D[0][1]/100));
@@ -538,7 +680,7 @@ function buildSelicTable(s0, hcop, hprox){
       <td class="${diff>0?'hike':diff<0?'cut':'flat'}">${diff>=0?'+':''}${diff.toFixed(0)}</td>
     </tr>`;
   });
-  document.getElementById('selic_tbl').innerHTML=h+'</tbody>';
+  document.getElementById(tblId).innerHTML=h+'</tbody>';
   document.getElementById('selic_lbl').textContent=
     buildTri(s0,D[1])[0]?.toFixed(2).replace('.',',')+' %';
 }
@@ -666,6 +808,51 @@ function calcFlat(){
   document.getElementById('flat_val').style.color=r.proj>4.5?'var(--red)':r.proj>3.5?'var(--amber)':r.proj<=3.0?'var(--green)':'var(--f27)';
 }
 
+function calcFlatSuav(){
+  const s0=parseFloat(document.getElementById('sv_s0')?.value)||14.75;
+  const st={cx0:parseFloat(document.getElementById('sv_cx0')?.value)||5.20,
+    cx1:parseFloat(document.getElementById('sv_cx1')?.value)||5.20,
+    br0:parseFloat(document.getElementById('sv_br0')?.value)||75,
+    br1:parseFloat(document.getElementById('sv_br1')?.value)||75,
+    cm0:parseFloat(document.getElementById('sv_cm0')?.value)||83,
+    cm1:parseFloat(document.getElementById('sv_cm1')?.value)||83,
+    f26_0:parseFloat(document.getElementById('sv_f26_0')?.value)||4.10,
+    f26_1:parseFloat(document.getElementById('sv_f26_1')?.value)||4.31,
+    f27_0:parseFloat(document.getElementById('sv_f27_0')?.value)||3.80,
+    f27_1:parseFloat(document.getElementById('sv_f27_1')?.value)||3.84,
+    proj_cop:parseFloat(document.getElementById('sv_proj_cop')?.value)||3.30};
+  const sf=parseFloat(document.getElementById('sv_flat_sel')?.value)||14.75;
+  const sel=document.getElementById('sv_prox_reuniao');
+  const o=sel?sel.options[sel.selectedIndex]:null;
+  const hprox=o?parseInt(o.dataset.hprox)||7:7;
+  const lprox=o?o.dataset.lprox||'4T2027':'4T2027';
+  // Use FRI suavizado (Brent×0.5)
+  const FRI_sv={...FRI, brent:FRI.brent.map(v=>v*0.5)};
+  const bps=(sf-s0)*100/16;
+  const dArr=Array(16).fill(bps);
+  // calcImpactos mas com FRI_sv — usar calcSuav inline
+  function calcFlatProj(s0,st,deltas,hor){
+    const sc=buildTri(s0,D[0]),sa=buildTri(s0,deltas);
+    const delta=sc.map((v,t)=>(sa[t]??v)-v);
+    const imp=delta.map((v,t)=>t===0?v:v-delta[t-1]);
+    let impS=0;
+    for(let t=0;t<Math.min(hor,imp.length);t++) impS+=imp[t]*(FRI_sv.selic[Math.min(hor-t,FRI_sv.selic.length-1)]||0);
+    const hh=Math.min(hor,FRI_sv.cambio.length-1);
+    const dCx=(st.cx1-st.cx0)/st.cx0*100, dBr=(st.br0>0&&st.br1>0)?(st.br1-st.br0)/st.br0*100:0, dCm=(st.cm1-st.cm0)/st.cm0*100;
+    const impCx=(dCx/10)*(FRI_sv.cambio[hh]||0),impBr=(dBr/10)*(FRI_sv.brent[hh]||0),impCm=(dCm/10)*(FRI_sv.comm[hh]||0);
+    const dF26=st.f26_1-st.f26_0,dF27=st.f27_1-st.f27_0;
+    const base=BCB_BASE[hor-1]??st.proj_cop;
+    return Math.max(0,base+(impS+impCx+impBr+impCm+dF26*0.30+dF27*0.40));
+  }
+  const r=calcFlatProj(s0,st,dArr,hprox);
+  const d=r-3.0;
+  const el=document.getElementById('sv_flat_val');
+  const es=document.getElementById('sv_flat_sub');
+  if(el){el.textContent=r.toFixed(2).replace('.',',')+' %';
+    el.style.color=r>4.5?'var(--red)':r>3.5?'var(--amber)':r<=3.0?'var(--green)':'var(--f27)';}
+  if(es) es.textContent=`${d>=0?'+':''}${d.toFixed(2).replace('.',',')} p.p. vs meta · ${lprox}`;
+}
+
 function onReunChange(){
   const {hcop}=getHz();
   const suggested=BCB_BASE[hcop-1];
@@ -674,82 +861,138 @@ function onReunChange(){
 }
 
 // ═══════════════════════════════════════════════════
-// STRESS RÁPIDO (completamente self-contained)
+// MODELO SUAVIZADO — igual ao completo mas Brent com FRI × 0.5
 // ═══════════════════════════════════════════════════
-function calcStress(){
-  const FRI_C=[0,0.14,0.34,0.58,0.96,0.72,0.52,0.38,0.31,0.28,0.24]; // Gráfico 3b BCB (pico 0,96 p.p.)
-  const FRI_B=[0,0.25,0.45,0.56,0.66,0.41,0.30,0.25,0.20,0.18,0.15]; // Gráfico 7b BCB (pico 0,66 p.p.)
-  const BASE=[3.6,3.7,3.8,3.9,3.4,3.3,3.3,3.2];
-  const TRI=['2T26','3T26','4T26','1T27','2T27','3T27','4T27','1T28'];
+function getSvHz(){
+  const sel=document.getElementById('sv_prox_reuniao');
+  const o=sel.options[sel.selectedIndex];
+  return{hprox:parseInt(o.dataset.hprox)||7,hcop:parseInt(o.dataset.hcop)||6,
+         lprox:o.dataset.lprox||'4T2027',lcop:o.dataset.lcop||'3T2027'};
+}
 
-  const cx0=parseFloat(document.getElementById('s_cx0').value)||5.40;
-  const cx1=parseFloat(document.getElementById('s_cx1').value)||5.25;
-  const br0=parseFloat(document.getElementById('s_br0').value)||75;
-  const br1=parseFloat(document.getElementById('s_br1').value)||103;
-
-  let hcop=6,hprox=7,lcop='3T2027',lprox='4T2027';
-  try{
-    const sel=document.getElementById('prox_reuniao');
-    if(sel){
-      const o=sel.options[sel.selectedIndex];
-      hcop=parseInt(o.dataset.hcop)||6;
-      hprox=parseInt(o.dataset.hprox)||7;
-      lcop=o.dataset.lcop||'3T2027';
-      lprox=o.dataset.lprox||'4T2027';
-    }
-  }catch(e){}
-
+function recalcSuav(){
+  const s0=parseFloat(document.getElementById('sv_s0').value)||14.75;
+  const st={
+    cx0:parseFloat(document.getElementById('sv_cx0').value)||5.20,
+    cx1:parseFloat(document.getElementById('sv_cx1').value)||5.20,
+    br0:parseFloat(document.getElementById('sv_br0').value)||75,
+    br1:parseFloat(document.getElementById('sv_br1').value)||75,
+    cm0:parseFloat(document.getElementById('sv_cm0').value)||83,
+    cm1:parseFloat(document.getElementById('sv_cm1').value)||83,
+    f26_0:parseFloat(document.getElementById('sv_f26_0').value)||4.10,
+    f26_1:parseFloat(document.getElementById('sv_f26_1').value)||4.31,
+    f27_0:parseFloat(document.getElementById('sv_f27_0').value)||3.80,
+    f27_1:parseFloat(document.getElementById('sv_f27_1').value)||3.84,
+    proj_cop:parseFloat(document.getElementById('sv_proj_cop').value)||3.30,
+  };
+  const {hprox,hcop,lprox,lcop}=getSvHz();
   const meta=3.0;
-  const dCx=(cx1-cx0)/cx0*100;
-  const dBr=(br1-br0)/br0*100;
 
-  const rows=BASE.map((base,i)=>{
-    const h=Math.min(i+1,FRI_C.length-1);
-    return{base,
-      iCx:(dCx/10)*(FRI_C[h]||0),
-      iBr:(dBr/10)*(FRI_B[h]||0)};
-  }).map(r=>({...r,proj:r.base+r.iCx+r.iBr}));
+  // FRI do Brent com 50% do pass-through
+  const FRI_SUAV={
+    selic:  FRI.selic,
+    cambio: FRI.cambio,
+    brent:  FRI.brent.map(v=>v*0.5),  // ← metade do pass-through
+    comm:   FRI.comm,
+  };
 
-  const hh=Math.min(hprox,FRI_C.length-1);
-  const impCx=(dCx/10)*(FRI_C[hh]||0);
-  const impBr=(dBr/10)*(FRI_B[hh]||0);
-  const proj=rows[Math.min(hprox-1,rows.length-1)].proj;
-  const d=proj-meta;
+  function calcSuav(s0,st,deltas,hor){
+    const sc=buildTri(s0,D[0]), sa=buildTri(s0,deltas);
+    const delta=sc.map((v,t)=>(sa[t]??v)-v);
+    const imp=delta.map((v,t)=>t===0?v:v-delta[t-1]);
+    let impS=0;
+    for(let t=0;t<Math.min(hor,imp.length);t++) impS+=imp[t]*(FRI_SUAV.selic[Math.min(hor-t,FRI_SUAV.selic.length-1)]||0);
+    const hh=Math.min(hor,FRI_SUAV.cambio.length-1);
+    const dCx=(st.cx1-st.cx0)/st.cx0*100;
+    const dBr=(st.br0>0&&st.br1>0)?(st.br1-st.br0)/st.br0*100:0;
+    const dCm=(st.cm1-st.cm0)/st.cm0*100;
+    const impCx=(dCx/10)*(FRI_SUAV.cambio[hh]||0);
+    const impBr=(dBr/10)*(FRI_SUAV.brent[hh]||0);
+    const impCm=(dCm/10)*(FRI_SUAV.comm[hh]||0);
+    const dF26=st.f26_1-st.f26_0, dF27=st.f27_1-st.f27_0;
+    const impF26=dF26*0.30, impF27=dF27*0.40;
+    const base=BCB_BASE[hor-1]??st.proj_cop;
+    const total=impS+impCx+impBr+impCm+impF26+impF27;
+    return{proj:Math.max(0,base+total),total,impS,impCx,impBr,impCm,impF26,impF27,dCx,dBr,dCm,dF26,dF27,sc,sa};
+  }
+
+  const ri=calcSuav(s0,st,D[1],hprox);
+  const rows=Array.from({length:8},(_,i)=>calcSuav(s0,st,D[1],i+1));
+  const d=ri.proj-meta;
   const col=v=>v>0.02?'var(--red)':v<-0.02?'var(--green)':'var(--muted)';
-  const fmt=v=>`${v>=0?'+':''}${v.toFixed(2).replace('.',',')} p.p.`;
+  const fmt=v=>`${v>=0?'+':''}${v.toFixed(2).replace('.',',')}`;
 
-  document.getElementById('s_cop_mtg').textContent=`277ª · ${lcop}`;
-  document.getElementById('s_prox_mtg').textContent=`Próxima · ${lprox}`;
-  document.getElementById('s_proj').textContent=proj.toFixed(2).replace('.',',')+' %';
-  document.getElementById('s_vs_meta').textContent=`${d>=0?'+':''}${d.toFixed(2).replace('.',',')} p.p. vs meta`;
-  const rb=document.getElementById('s_res_block');
-  rb.style.background=proj>4.5?'linear-gradient(135deg,#7f1d1d,#b91c1c)':
-    proj>meta+.5?'linear-gradient(135deg,#78350f,#b45309)':
-    proj<=meta?'linear-gradient(135deg,#14532d,#15803d)':
+  // KPIs — right panel only (left panel boxes removed)
+  // Right panel KPIs
+  ['sv_rc_mtg2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`277ª · T+${hcop} (${lcop})`;});
+  ['sv_rc_val2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=st.proj_cop.toFixed(2).replace('.',',')+' %';});
+  ['sv_rp_mtg2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`Próxima · T+${hprox} (${lprox})`;});
+  ['sv_rp_val2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ri.proj.toFixed(2).replace('.',',')+' %';});
+  ['sv_rp_sub2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`${d>=0?'+':''}${d.toFixed(2).replace('.',',')} p.p. vs meta 3,0%`;});
+  const rpb2=document.getElementById('sv_rp_block2');
+  if(rpb2) rpb2.style.background=ri.proj>4.5?'linear-gradient(135deg,#7f1d1d,#b91c1c)':
+    ri.proj>meta+0.5?'linear-gradient(135deg,#78350f,#b45309)':
+    ri.proj<=meta?'linear-gradient(135deg,#14532d,#15803d)':
     'linear-gradient(135deg,var(--bcb),var(--bcb2))';
+  // Selic necessária suavizado
+  const sn_suav=calcSelicNec(s0,st,hprox);
+  const sv_sn=document.getElementById('sv_sn_val');
+  const sv_ss=document.getElementById('sv_sn_sub');
+  if(sv_sn) sv_sn.textContent=sn_suav.toFixed(2).replace('.',',')+'%';
+  if(sv_ss) sv_ss.textContent=`Cenário atual chega em ${buildTri(s0,D[1])[7].toFixed(2).replace('.',',')}%`;
+  calcFlatSuav();
 
-  document.getElementById('s_imp_cx').textContent=fmt(impCx);
-  document.getElementById('s_imp_cx').style.color=col(impCx);
-  document.getElementById('s_dcx').textContent=`${dCx.toFixed(1)}% var · R$${cx0.toFixed(2)}→R$${cx1.toFixed(2)}`;
-  document.getElementById('s_imp_br').textContent=fmt(impBr);
-  document.getElementById('s_imp_br').style.color=col(impBr);
-  document.getElementById('s_dbr').textContent=`${dBr.toFixed(1)}% var · US$${br0}→US$${br1}`;
 
-  const TRI_HOP=TRI[hcop-1], TRI_HPP=TRI[hprox-1];
-  let h2='';
+  // Decomposição
+  const imps=[
+    {l:'💰 Selic',      v:ri.impS,  s:'Δ trajetória'},
+    {l:'💵 Câmbio',     v:ri.impCx, s:`${ri.dCx.toFixed(1)}% · R$${st.cx0.toFixed(2)}→R$${st.cx1.toFixed(2)}`},
+    {l:'🛢️ Brent ×0,5', v:ri.impBr, s:`${ri.dBr.toFixed(1)}% · US$${st.br0}→US$${st.br1} (suavizado)`},
+    {l:'🌾 IC-Br',      v:ri.impCm, s:`${ri.dCm.toFixed(1)}% · ${st.cm0}→${st.cm1}`},
+    {l:'📊 Focus 2026', v:ri.impF26,s:`Δ${fmt(ri.dF26)} p.p.`},
+    {l:'📅 Focus 2027', v:ri.impF27,s:`Δ${fmt(ri.dF27)} p.p.`},
+    {l:'∑ Total',       v:ri.total, s:'Soma impactos'},
+    {l:'🏦 Projeção',   v:ri.proj,  s:`T+${hprox} (${lprox})`,pct:true},
+  ];
+  document.getElementById('sv_imp_wrap').innerHTML=imps.map(x=>{
+    const c=x.pct?(x.v>4.5?'var(--red)':x.v>meta+.5?'var(--amber)':x.v<=meta?'var(--green)':'var(--bcb2)'):col(x.v);
+    const t=x.pct?`${x.v.toFixed(2).replace('.',',')}%`:(x.l==='∑ Total'?fmt(x.v):fmt(x.v))+' p.p.';
+    return `<div class="imp-item"><div class="il">${x.l}</div><div class="iv" style="color:${c}">${t}</div><div class="is">${x.s}</div></div>`;
+  }).join('');
+
+  // Tabela Selic
+  buildSelicTable(s0,hcop,hprox,'sv_selic_tbl');
+
+  // Tabela resultado
+  const TRI_HOP=TRI_RESULT[hcop-1], TRI_HPP=TRI_RESULT[hprox-1];
+  let h=`<thead><tr>
+    <th>Trimestre</th><th>Selic Cenário</th><th>Selic Base</th>
+    <th>IPCA Base BCB</th><th>IPCA Projetado</th>
+    <th>Δ vs. Base</th><th>vs. Meta</th>
+    <th>Imp. Selic</th><th>Imp. Câmbio</th><th>Imp. Brent ×0,5</th>
+    <th>Imp. IC-Br</th><th>Imp. F.26</th><th>Imp. F.27</th>
+  </tr></thead><tbody>`;
   rows.forEach((r,i)=>{
-    const isCop=(TRI[i]===TRI_HOP), isProx=(TRI[i]===TRI_HPP);
-    const dm=r.proj-meta;
-    h2+=`<tr class="${isProx?'s-prox':isCop?'s-cop':''}">
-      <td>${TRI[i]} T+${i+1}${isProx?' ★★':isCop?' ★':''}</td>
-      <td style="text-align:center">${r.base.toFixed(2).replace('.',',')}%</td>
-      <td style="text-align:center;font-weight:700;color:${r.proj>4.5?'var(--red)':r.proj<meta?'var(--green)':'inherit'}">${r.proj.toFixed(2).replace('.',',')}%</td>
-      <td style="text-align:center;color:${col(r.iCx)}">${r.iCx>=0?'+':''}${r.iCx.toFixed(2).replace('.',',')}</td>
-      <td style="text-align:center;color:${col(r.iBr)}">${r.iBr>=0?'+':''}${r.iBr.toFixed(2).replace('.',',')}</td>
-      <td style="text-align:center"><span class="tag ${dm>0?'above':dm<0?'below':'neut'}">${dm>=0?'+':''}${dm.toFixed(2).replace('.',',')} p.p.</span></td>
+    const tri=TRI_RESULT[i];
+    const isCop=(tri===TRI_HOP),isProx=(tri===TRI_HPP);
+    const dt=r.proj-BCB_BASE[i],dm=r.proj-meta;
+    const sa=r.sa[i]??s0,sc=r.sc[i]??s0;
+    h+=`<tr class="${isProx?'row-prox':isCop?'row-cop':''}">
+      <td><b>${tri}</b> T+${i+1}${isProx?' ★★':isCop?' ★':''}</td>
+      <td>${sa.toFixed(2).replace('.',',')}%</td><td>${sc.toFixed(2).replace('.',',')}%</td>
+      <td>${BCB_BASE[i].toFixed(2).replace('.',',')}%</td>
+      <td style="font-weight:700;color:${r.proj>4.5?'var(--red)':r.proj<meta?'var(--green)':'inherit'}">${r.proj.toFixed(2).replace('.',',')}%</td>
+      <td><span class="tag ${dt>0.01?'above':dt<-0.01?'below':'neut'}">${dt>=0?'+':''}${dt.toFixed(2).replace('.',',')}</span></td>
+      <td><span class="tag ${dm>0?'above':dm<0?'below':'neut'}">${dm>=0?'+':''}${dm.toFixed(2).replace('.',',')}</span></td>
+      <td class="${r.impS>0.01?'hike':r.impS<-0.01?'cut':''}">${r.impS>=0?'+':''}${r.impS.toFixed(2).replace('.',',')}</td>
+      <td class="${r.impCx>0.01?'hike':r.impCx<-0.01?'cut':''}">${r.impCx>=0?'+':''}${r.impCx.toFixed(2).replace('.',',')}</td>
+      <td class="${r.impBr>0.01?'hike':r.impBr<-0.01?'cut':''}">${r.impBr>=0?'+':''}${r.impBr.toFixed(2).replace('.',',')}</td>
+      <td class="${r.impCm>0.01?'hike':r.impCm<-0.01?'cut':''}">${r.impCm>=0?'+':''}${r.impCm.toFixed(2).replace('.',',')}</td>
+      <td class="${r.impF26>0.01?'hike':r.impF26<-0.01?'cut':''}">${r.impF26>=0?'+':''}${r.impF26.toFixed(2).replace('.',',')}</td>
+      <td class="${r.impF27>0.01?'hike':r.impF27<-0.01?'cut':''}">${r.impF27>=0?'+':''}${r.impF27.toFixed(2).replace('.',',')}</td>
     </tr>`;
   });
-  document.getElementById('s_tbl_body').innerHTML=h2;
+  document.getElementById('sv_res_tbl').innerHTML=h+'</tbody>';
 }
 
 // ═══════════════════════════════════════════════════
@@ -758,23 +1001,258 @@ function calcStress(){
 function goTab(tab,btn){
   document.getElementById('pg_main').style.display   = tab==='main'  ?'':'none';
   document.getElementById('pg_stress').style.display = tab==='stress'?'':'none';
+  document.getElementById('pg_selic').style.display  = tab==='selic' ?'':'none';
   document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active')});
   btn.classList.add('active');
-  if(tab==='stress') calcStress();
+  if(tab==='stress') recalcSuav();
+  if(tab==='selic')  initScenarios();
+}
+
+// ═══════════════════════════════════════════════════
+// CENÁRIOS SELIC
+// ═══════════════════════════════════════════════════
+// 3 arrays de deltas editáveis pelo usuário (um por cenário)
+let SC = [
+  [...D[1]], // Cenário 1 — começa igual ao Cenário Atual (D[1])
+  [...D[0]], // Cenário 2 — começa igual ao Base Copom
+  [...D[0]], // Cenário 3 — começa igual ao Base Copom
+];
+
+function initScenarios(){
+  // Sync SC: Cenário 1 = D[1] (Atual), Cenários 2 e 3 = D[0] (Base)
+  SC = [[...D[1]], [...D[0]], [...D[0]]];
+  renderScenarios();
+}
+
+function renderScenarios(){
+  const s0 = parseFloat(document.getElementById('s0').value)||14.75;
+  const st = {
+    cx0:parseFloat(document.getElementById('cx0').value)||5.20,
+    cx1:parseFloat(document.getElementById('cx1').value)||5.20,
+    br0:parseFloat(document.getElementById('br0').value)||75,
+    br1:parseFloat(document.getElementById('br1').value)||75,
+    cm0:parseFloat(document.getElementById('cm0').value)||83,
+    cm1:parseFloat(document.getElementById('cm1').value)||83,
+    f26_0:parseFloat(document.getElementById('f26_0').value)||4.10,
+    f26_1:parseFloat(document.getElementById('f26_1').value)||4.10,
+    f27_0:parseFloat(document.getElementById('f27_0').value)||3.80,
+    f27_1:parseFloat(document.getElementById('f27_1').value)||3.80,
+    proj_cop:parseFloat(document.getElementById('proj_cop').value)||3.30,
+  };
+  const {hprox,hcop,lprox,lcop} = getHz();
+  const meta = 3.0;
+  const cols = ['var(--cyan)','#0D6696','#2E96BF'];
+  const scBg  = ['#f0fbfd','#e8f4fb','#edf8fc'];
+
+  // Build Selic levels for each scenario
+  function getLevels(deltas){
+    let l = s0, lvls = [];
+    // past meetings (0,1) = 0
+    for(let i=0;i<2;i++) l = Math.max(4,Math.min(25,l+deltas[i]/100));
+    REUN.forEach(r=>{
+      l = Math.max(4,Math.min(25,l+deltas[r.i]/100));
+      lvls.push(l);
+    });
+    return lvls;
+  }
+  const lvls0 = getLevels(D[0]);
+  const lvls = SC.map(d=>getLevels(d));
+
+  // Compute projections for each scenario
+  const projs = SC.map(d=>calcImpactos(s0,st,d,hprox).proj);
+  const proj0 = st.proj_cop; // Base Copom = valor oficial do BCB (não recalcular)
+
+  // Update proj cop reference label — usa o valor inputado pelo usuário (proj_cop oficial do BCB)
+  const proj_cop_oficial = st.proj_cop;
+  const lbl = document.getElementById('sc_proj_cop_lbl');
+  const sub = document.getElementById('sc_proj_cop_sub');
+  if(lbl) lbl.textContent = proj_cop_oficial.toFixed(2).replace('.',',')+'%';
+  if(sub) sub.textContent = `277ª reunião · HR: ${lcop} · ${(proj_cop_oficial-3.0)>=0?'+':''}${(proj_cop_oficial-3.0).toFixed(2).replace('.',',')} p.p. vs meta`;
+
+  // Render input rows
+  let rows = '';
+  REUN.forEach((r,ri)=>{
+    const d0 = D[0][r.i];
+    const TRI_HOP = TRI_RESULT[hcop-1], TRI_HPP = TRI_RESULT[hprox-1];
+    const isC=(r.tri===TRI_HOP), isP=(r.tri===TRI_HPP);
+    const rowBg = isP?'background:#f0f9ff':isC?'background:#f0fdf4':'';
+    const borderL = isP?'border-left:3px solid var(--cyan)':isC?'border-left:3px solid var(--teal)':'';
+    rows += `<tr style="${rowBg}">
+      <td style="padding:4px 10px;font-weight:${isP||isC?700:500};color:var(--bcb);font-size:10.5px;${borderL}">${r.l}${isP?' ★★':isC?' ★':''}</td>
+      <td style="padding:4px 8px;text-align:center;background:#dbeafe;font-weight:800;font-size:10px;color:#1d4ed8">${r.tri}</td>
+      <td style="padding:4px 8px;text-align:center;font-family:monospace;font-weight:700;color:${d0<0?'var(--green)':d0>0?'var(--red)':'#94a3b8'}">${d0<0?d0:d0>0?'+'+d0:'0'} <small style="color:var(--muted);font-weight:400">(${lvls0[ri].toFixed(2)}%)</small></td>
+      ${[0,1,2].map(ci=>{
+        const dv = SC[ci][r.i];
+        return `<td style="padding:3px 6px;text-align:center">
+          <input type="number" value="${dv}" step="12.5"
+            style="width:65px;padding:3px 4px;border:1.5px solid ${cols[ci]};border-radius:4px;font-family:monospace;font-size:12px;font-weight:700;text-align:center;color:${dv<0?'var(--green)':dv>0?'var(--red)':'#94a3b8'}"
+            oninput="updateSC(${ci},${r.i},+this.value)">
+          <div style="font-size:9px;color:var(--muted);margin-top:1px">${lvls[ci][ri].toFixed(2)}%</div>
+        </td>`;
+      }).join('')}
+    </tr>`;
+  });
+  document.getElementById('sc_input_body').innerHTML = rows;
+
+  // Render result footer
+  const fmtProj = (p,base,bg='#f8fafc',bc='var(--bcb2)') => {
+    const d = p-meta;
+    const dd = p-base;
+    const c = p>4.5?'var(--red)':p>meta+.5?'var(--amber)':p<=meta?'var(--green)':bc;
+    return `<td style="padding:8px 10px;text-align:center;background:${bg}">
+      <div style="font-size:18px;font-weight:900;font-family:monospace;color:${c}">${p.toFixed(2).replace('.',',')}%</div>
+      <div style="font-size:9.5px;color:var(--muted);margin-top:2px">${d>=0?'+':''}${d.toFixed(2).replace('.',',')} p.p. vs meta</div>
+      <div style="font-size:9.5px;color:${dd>0?'var(--red)':dd<0?'var(--green)':'var(--muted)'}">vs base: ${dd>=0?'+':''}${dd.toFixed(2).replace('.',',')} p.p.</div>
+    </td>`;
+  };
+
+  document.getElementById('sc_result_foot').innerHTML = `<tr style="border-top:3px solid var(--cyan)">
+    <td colspan="2" style="padding:8px 10px;font-weight:800;color:var(--bcb);font-size:11px">IPCA Projetado<br><small style="font-weight:400;color:var(--muted)">T+${hprox} (${lprox})</small></td>
+    <td style="padding:8px 10px;text-align:center;background:#f8fafc">
+      <div style="font-size:18px;font-weight:900;font-family:monospace;color:var(--bcb2)">${proj0.toFixed(2).replace('.',',')}%</div>
+      <div style="font-size:9.5px;color:var(--muted);margin-top:2px">${(proj0-meta)>=0?'+':''}${(proj0-meta).toFixed(2).replace('.',',')} p.p. vs meta</div>
+      <div style="font-size:9.5px;color:var(--muted)">referência</div>
+    </td>
+    ${projs.map((p,ci)=>fmtProj(p,proj0,scBg[ci],cols[ci])).join('')}
+  </tr>`;
+}
+
+function updateSC(col, idx, val){
+  SC[col][idx] = val;
+  renderScenarios();
+}
+
+function resetScenarios(){
+  SC = [[...D[1]], [...D[0]], [...D[0]]]; // Cenário 1 = Atual, 2 e 3 = Base
+  renderScenarios();
 }
 
 // ═══════════════════════════════════════════════════
 // DEFAULTS + INIT
 // ═══════════════════════════════════════════════════
 function resetAll(){
-  const defs={s0:15,cx0:5.40,cx1:5.25,br0:75,br1:75,cm0:83,cm1:83,
+  const defs={s0:14.75,cx0:5.20,cx1:5.20,br0:75,br1:75,cm0:83,cm1:83,
     f26_0:4.10,f26_1:4.31,f27_0:3.80,f27_1:3.84,proj_cop:3.30,flat_sel:14.75};
   Object.entries(defs).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v;});
   document.getElementById('prox_reuniao').selectedIndex=0;
-  D[0]=[0,0,-50,-50,-50,-50,-25,-25,0,-25,-25,-25,-25,-12.5,-37.5,0];
-  D[1]=[...D[0]];
+  // D[0] = Selic Base (Último Copom): fim-26=12,25% fim-27=10,50%
+  D[0]=[0,0,-50,-75,-25,-50,-25,-25,-25,0,-50,-25,-25,0,-37.5,-12.5];
+  // D[1] = Selic Cenário (Atual/Focus): fim-26=12,50% fim-27=10,50%
+  D[1]=[0,0,-25,-50,-25,-50,-50,-25,-25,-25,-25,-25,-25,-25,-25,-25];
   recalc();
 }
+
+// ═══════════════════════════════════════════════════
+// INTEGRAÇÃO COM APIs DO BCB
+// ═══════════════════════════════════════════════════
+async function updateFromBCB(){
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Buscando dados...';
+  
+  try {
+    // 1. Buscar Câmbio (PTAX) — última cotação
+    let cambioPTAX = null;
+    try {
+      const today = new Date();
+      const endDate = today.toLocaleDateString('pt-BR', {year:'numeric', month:'2-digit', day:'2-digit'}).split('/').reverse().join('-');
+      const startDate = new Date(today.getTime() - 30*24*60*60*1000).toLocaleDateString('pt-BR', {year:'numeric', month:'2-digit', day:'2-digit'}).split('/').reverse().join('-');
+      
+      const ptaxUrl = `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinal=@dataFinal)?@dataInicial='${startDate}'&@dataFinal='${endDate}'&$top=1&$orderby=data%20desc&$format=json`;
+      const ptaxRes = await fetch(ptaxUrl);
+      if(ptaxRes.ok){
+        const ptaxData = await ptaxRes.json();
+        if(ptaxData.value && ptaxData.value.length > 0){
+          const latest = ptaxData.value[0];
+          cambioPTAX = latest.cotacaoVenda || latest.cotacaoCompra;
+        }
+      }
+    } catch(e) { console.log('PTAX error:', e); }
+    
+    // 2. Buscar Selic expectativa (última mediana)
+    let selicMediana = null;
+    try {
+      const selicUrl = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$top=1&$orderby=Data%20desc&$format=json';
+      const selicRes = await fetch(selicUrl);
+      if(selicRes.ok){
+        const selicData = await selicRes.json();
+        if(selicData.value && selicData.value.length > 0){
+          const latest = selicData.value[0];
+          // Pega a mediana para o próximo mês disponível
+          selicMediana = latest.MedianaSelic || parseFloat(latest.medianadaSelic);
+        }
+      }
+    } catch(e) { console.log('Selic error:', e); }
+    
+    // 3. Buscar Focus IPCA 2026 e 2027
+    let focus26 = null, focus27 = null;
+    try {
+      const focusUrl = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?$filter=Indicador%20eq%20%27IPCA%27&$top=100&$orderby=Data%20desc&$format=json";
+      const focusRes = await fetch(focusUrl);
+      if(focusRes.ok){
+        const focusData = await focusRes.json();
+        if(focusData.value && focusData.value.length > 0){
+          // Procura a projeção mais recente para cada ano
+          for(let item of focusData.value){
+            if(item.Ano === 2026 && !focus26){
+              focus26 = parseFloat(item.Mediana || item.mediana);
+            }
+            if(item.Ano === 2027 && !focus27){
+              focus27 = parseFloat(item.Mediana || item.mediana);
+            }
+            if(focus26 && focus27) break;
+          }
+        }
+      }
+    } catch(e) { console.log('Focus error:', e); }
+    
+    // Atualizar os campos com os dados obtidos
+    let updated = false;
+    
+    if(cambioPTAX){
+      document.getElementById('cx1').value = Number(cambioPTAX).toFixed(4);
+      updated = true;
+    }
+    if(selicMediana !== null && selicMediana !== undefined){
+      // A mediana está em % a.a. - simplifica o valor
+      document.getElementById('s0').value = Number(selicMediana).toFixed(2);
+      updated = true;
+    }
+    if(focus26){
+      document.getElementById('f26_1').value = Number(focus26).toFixed(2);
+      updated = true;
+    }
+    if(focus27){
+      document.getElementById('f27_1').value = Number(focus27).toFixed(2);
+      updated = true;
+    }
+    
+    if(updated){
+      recalc();
+      btn.textContent = '✅ Dados atualizados!';
+      setTimeout(()=>{
+        btn.textContent = '🔄 Atualizar dados do BCB';
+        btn.disabled = false;
+      }, 2000);
+    } else {
+      btn.textContent = '⚠️ Nenhum dado obtido';
+      setTimeout(()=>{
+        btn.textContent = '🔄 Atualizar dados do BCB';
+        btn.disabled = false;
+      }, 2000);
+    }
+    
+  } catch(err) {
+    console.error('Erro ao atualizar:', err);
+    btn.textContent = '❌ Erro na atualização';
+    setTimeout(()=>{
+      btn.textContent = '🔄 Atualizar dados do BCB';
+      btn.disabled = false;
+    }, 3000);
+  }
+}
+
+window.addEventListener('load',()=>{ recalc(); });
 
 window.addEventListener('load',()=>{ recalc(); });
 </script>

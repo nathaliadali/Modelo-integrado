@@ -1186,16 +1186,21 @@ async function updateFromBCB(btn){
       const startDate = new Date(today.getTime() - 30*24*60*60*1000).toLocaleDateString('pt-BR', {year:'numeric', month:'2-digit', day:'2-digit'}).split('/').reverse().join('-');
       
       const ptaxUrl = `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinal=@dataFinal)?@dataInicial='${startDate}'&@dataFinal='${endDate}'&$top=1&$orderby=data%20desc&$format=json`;
+      console.log('🔗 PTAX URL:', ptaxUrl);
       const ptaxRes = await fetch(ptaxUrl);
       if(ptaxRes.ok){
         const ptaxData = await ptaxRes.json();
+        console.log('📊 PTAX Response:', ptaxData.value?.slice(0, 3));
         if(ptaxData.value && ptaxData.value.length > 0){
           const latest = ptaxData.value[0];
+          console.log('PTAX item sample:', Object.keys(latest));
           cambioPTAX = latest.cotacaoVenda || latest.cotacaoCompra;
-          console.log('✓ PTAX:', cambioPTAX);
+          console.log('✅ PTAX:', cambioPTAX);
         }
+      } else {
+        console.warn('⚠️ PTAX Status:', ptaxRes.status);
       }
-    } catch(e) { console.log('PTAX error:', e); }
+    } catch(e) { console.error('❌ PTAX error:', e); }
     
     // 2. Buscar Selic expectativa (última mediana)
     let selicMediana = null;
@@ -1204,13 +1209,18 @@ async function updateFromBCB(btn){
       const selicRes = await fetch(selicUrl);
       if(selicRes.ok){
         const selicData = await selicRes.json();
+        console.log('📊 Selic Response:', selicData.value?.[0]);
         if(selicData.value && selicData.value.length > 0){
           const latest = selicData.value[0];
-          selicMediana = latest.MedianaSelic || parseFloat(latest.Mediana);
-          console.log('✓ Selic:', selicMediana);
+          console.log('Selic item keys:', Object.keys(latest));
+          // Tenta diferentes nomes de campo
+          selicMediana = latest.MedianaSelic || latest.Mediana || latest['Mediana de Expectativa'];
+          console.log('✅ Selic:', selicMediana);
         }
+      } else {
+        console.warn('⚠️ Selic Status:', selicRes.status);
       }
-    } catch(e) { console.log('Selic error:', e); }
+    } catch(e) { console.error('❌ Selic error:', e); }
     
     // 3. Buscar Focus IPCA 2026 e 2027
     let focus26 = null, focus27 = null;
@@ -1219,20 +1229,40 @@ async function updateFromBCB(btn){
       const focusRes = await fetch(focusUrl);
       if(focusRes.ok){
         const focusData = await focusRes.json();
+        console.log('📊 Focus Response completo:', focusData.value?.slice(0, 5));
+        
         if(focusData.value && focusData.value.length > 0){
+          // Debug: mostra estrutura do primeiro item
+          console.log('First Focus item keys:', Object.keys(focusData.value[0]));
+          console.log('First Focus item:', JSON.stringify(focusData.value[0]));
+          
           for(let item of focusData.value){
-            if(item.Ano === 2026 && !focus26){
-              focus26 = parseFloat(item.Mediana);
+            // Tenta vários nomes de campo para Ano
+            const ano = item.Ano || item.ano || item['AnoCalendario'] || item['Ano Calendário'];
+            // Tenta vários nomes para Mediana
+            const mediana = item.Mediana || item.mediana || item['MedianadasExpectativas'] || item['Mediana das Expectativas'];
+            
+            console.log(`Processando item: Ano=${ano}, Mediana=${mediana}`);
+            
+            if(ano === 2026 && !focus26 && mediana){
+              focus26 = parseFloat(mediana);
+              console.log('✅ Focus 2026 encontrado:', focus26);
             }
-            if(item.Ano === 2027 && !focus27){
-              focus27 = parseFloat(item.Mediana);
+            if(ano === 2027 && !focus27 && mediana){
+              focus27 = parseFloat(mediana);
+              console.log('✅ Focus 2027 encontrado:', focus27);
             }
             if(focus26 && focus27) break;
           }
-          console.log('✓ Focus 2026:', focus26, 'Focus 2027:', focus27);
+          
+          if(!focus26 || !focus27){
+            console.warn('⚠️ Focus não totalmente encontrado (26:', focus26, ', 27:', focus27, ')');
+          }
         }
+      } else {
+        console.warn('⚠️ Focus Status:', focusRes.status);
       }
-    } catch(e) { console.log('Focus error:', e); }
+    } catch(e) { console.error('❌ Focus error:', e); }
     
     // Atualizar os campos com os dados obtidos
     let updated = false;
@@ -1247,10 +1277,12 @@ async function updateFromBCB(btn){
     }
     if(focus26 && !isNaN(focus26)){
       document.getElementById('f26_1').value = Number(focus26).toFixed(2);
+      console.log('📝 Focus 2026 atualizado:', focus26);
       updated = true;
     }
     if(focus27 && !isNaN(focus27)){
       document.getElementById('f27_1').value = Number(focus27).toFixed(2);
+      console.log('📝 Focus 2027 atualizado:', focus27);
       updated = true;
     }
     

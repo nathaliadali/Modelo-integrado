@@ -570,13 +570,19 @@ const gn = id => { const el=document.getElementById(id); return el?parseFloat(el
 
 function getHz(){
   const sel = document.getElementById('prox_reuniao');
+  if(!sel || sel.length === 0) return {hprox:7, hcop:6, lprox:'4T2027', lcop:'3T2027'};
+  
   const o = sel.options[sel.selectedIndex];
-  return {
-    hprox: parseInt(o.dataset.hprox)||7,
-    hcop:  parseInt(o.dataset.hcop)||6,
-    lprox: o.dataset.lprox||'4T2027',
-    lcop:  o.dataset.lcop||'3T2027',
-  };
+  if(!o) return {hprox:7, hcop:6, lprox:'4T2027', lcop:'3T2027'};
+  
+  const hprox = parseInt(o.dataset.hprox) || 7;
+  const hcop = parseInt(o.dataset.hcop) || 6;
+  const lprox = o.dataset.lprox || '4T2027';
+  const lcop = o.dataset.lcop || '3T2027';
+  
+  console.log('getHz:', {hprox, hcop, lprox, lcop}); // Debug
+  
+  return {hprox, hcop, lprox, lcop};
 }
 
 function buildTri(s0, deltas){
@@ -691,22 +697,27 @@ function updateD(col,idx,val){ D[col][idx]=val; recalc(); }
 // RECALCULAR
 // ═══════════════════════════════════════════════════
 function recalc(){
-  const s0=gn('s0')||15;
-  const st={
-    cx0:gn('cx0')||5.40, cx1:gn('cx1')||5.25,
-    br0:gn('br0')||75,   br1:gn('br1')||75,
-    cm0:gn('cm0')||83,   cm1:gn('cm1')||83,
-    f26_0:gn('f26_0')||4.10, f26_1:gn('f26_1')||4.31,
-    f27_0:gn('f27_0')||3.80, f27_1:gn('f27_1')||3.84,
-    proj_cop:gn('proj_cop')||3.30,
-  };
-  const {hprox,hcop,lprox,lcop}=getHz();
-  const meta=3.0;
+  try {
+    const s0=gn('s0')||15;
+    const st={
+      cx0:gn('cx0')||5.40, cx1:gn('cx1')||5.25,
+      br0:gn('br0')||75,   br1:gn('br1')||75,
+      cm0:gn('cm0')||83,   cm1:gn('cm1')||83,
+      f26_0:gn('f26_0')||4.10, f26_1:gn('f26_1')||4.31,
+      f27_0:gn('f27_0')||3.80, f27_1:gn('f27_1')||3.84,
+      proj_cop:gn('proj_cop')||3.30,
+    };
+    const {hprox,hcop,lprox,lcop}=getHz();
+    
+    // Proteção contra valores inválidos
+    const hproxValid = parseInt(hprox) || 7;
+    const hcopValid = parseInt(hcop) || 6;
+    const meta=3.0;
 
-  const ri = calcImpactos(s0,st,D[1],hprox);
-  const rows = calcTraj(s0,st,D[1]);
-  const sn = calcSelicNec(s0,st,hprox);
-  const d = ri.proj-meta;
+    const ri = calcImpactos(s0,st,D[1],hproxValid);
+    const rows = calcTraj(s0,st,D[1]);
+    const sn = calcSelicNec(s0,st,hproxValid);
+    const d = ri.proj-meta;
 
   // Pills
   document.getElementById('pill_cop').textContent=`277ª Copom · HR: ${lcop} = ${st.proj_cop.toFixed(2).replace('.',',')}%`;
@@ -788,6 +799,9 @@ function recalc(){
     </tr>`;
   });
   document.getElementById('res_tbl').innerHTML=h+'</tbody>';
+  } catch(e) {
+    console.error('Erro em recalc():', e);
+  }
 }
 
 function calcFlat(){
@@ -865,28 +879,35 @@ function onReunChange(){
 // ═══════════════════════════════════════════════════
 function getSvHz(){
   const sel=document.getElementById('sv_prox_reuniao');
+  if(!sel || sel.length === 0) return {hprox:7,hcop:6,lprox:'4T2027',lcop:'3T2027'};
   const o=sel.options[sel.selectedIndex];
+  if(!o) return {hprox:7,hcop:6,lprox:'4T2027',lcop:'3T2027'};
   return{hprox:parseInt(o.dataset.hprox)||7,hcop:parseInt(o.dataset.hcop)||6,
          lprox:o.dataset.lprox||'4T2027',lcop:o.dataset.lcop||'3T2027'};
 }
 
 function recalcSuav(){
-  const s0=parseFloat(document.getElementById('sv_s0').value)||14.75;
-  const st={
-    cx0:parseFloat(document.getElementById('sv_cx0').value)||5.20,
-    cx1:parseFloat(document.getElementById('sv_cx1').value)||5.20,
-    br0:parseFloat(document.getElementById('sv_br0').value)||75,
-    br1:parseFloat(document.getElementById('sv_br1').value)||75,
-    cm0:parseFloat(document.getElementById('sv_cm0').value)||83,
-    cm1:parseFloat(document.getElementById('sv_cm1').value)||83,
-    f26_0:parseFloat(document.getElementById('sv_f26_0').value)||4.10,
-    f26_1:parseFloat(document.getElementById('sv_f26_1').value)||4.31,
-    f27_0:parseFloat(document.getElementById('sv_f27_0').value)||3.80,
-    f27_1:parseFloat(document.getElementById('sv_f27_1').value)||3.84,
-    proj_cop:parseFloat(document.getElementById('sv_proj_cop').value)||3.30,
-  };
-  const {hprox,hcop,lprox,lcop}=getSvHz();
-  const meta=3.0;
+  try {
+    const s0=parseFloat(document.getElementById('sv_s0').value)||14.75;
+    const st={
+      cx0:parseFloat(document.getElementById('sv_cx0').value)||5.20,
+      cx1:parseFloat(document.getElementById('sv_cx1').value)||5.20,
+      br0:parseFloat(document.getElementById('sv_br0').value)||75,
+      br1:parseFloat(document.getElementById('sv_br1').value)||75,
+      cm0:parseFloat(document.getElementById('sv_cm0').value)||83,
+      cm1:parseFloat(document.getElementById('sv_cm1').value)||83,
+      f26_0:parseFloat(document.getElementById('sv_f26_0').value)||4.10,
+      f26_1:parseFloat(document.getElementById('sv_f26_1').value)||4.31,
+      f27_0:parseFloat(document.getElementById('sv_f27_0').value)||3.80,
+      f27_1:parseFloat(document.getElementById('sv_f27_1').value)||3.84,
+      proj_cop:parseFloat(document.getElementById('sv_proj_cop').value)||3.30,
+    };
+    const {hprox,hcop,lprox,lcop}=getSvHz();
+    
+    // Proteção contra valores inválidos
+    const hproxValid = parseInt(hprox) || 7;
+    const hcopValid = parseInt(hcop) || 6;
+    const meta=3.0;
 
   // FRI do Brent com 50% do pass-through
   const FRI_SUAV={
@@ -916,7 +937,7 @@ function recalcSuav(){
     return{proj:Math.max(0,base+total),total,impS,impCx,impBr,impCm,impF26,impF27,dCx,dBr,dCm,dF26,dF27,sc,sa};
   }
 
-  const ri=calcSuav(s0,st,D[1],hprox);
+  const ri=calcSuav(s0,st,D[1],hproxValid);
   const rows=Array.from({length:8},(_,i)=>calcSuav(s0,st,D[1],i+1));
   const d=ri.proj-meta;
   const col=v=>v>0.02?'var(--red)':v<-0.02?'var(--green)':'var(--muted)';
@@ -935,7 +956,7 @@ function recalcSuav(){
     ri.proj<=meta?'linear-gradient(135deg,#14532d,#15803d)':
     'linear-gradient(135deg,var(--bcb),var(--bcb2))';
   // Selic necessária suavizado
-  const sn_suav=calcSelicNec(s0,st,hprox);
+  const sn_suav=calcSelicNec(s0,st,hproxValid);
   const sv_sn=document.getElementById('sv_sn_val');
   const sv_ss=document.getElementById('sv_sn_sub');
   if(sv_sn) sv_sn.textContent=sn_suav.toFixed(2).replace('.',',')+'%';
@@ -961,10 +982,10 @@ function recalcSuav(){
   }).join('');
 
   // Tabela Selic
-  buildSelicTable(s0,hcop,hprox,'sv_selic_tbl');
+  buildSelicTable(s0,hcopValid,hproxValid,'sv_selic_tbl');
 
   // Tabela resultado
-  const TRI_HOP=TRI_RESULT[hcop-1], TRI_HPP=TRI_RESULT[hprox-1];
+  const TRI_HOP=TRI_RESULT[hcopValid-1], TRI_HPP=TRI_RESULT[hproxValid-1];
   let h=`<thead><tr>
     <th>Trimestre</th><th>Selic Cenário</th><th>Selic Base</th>
     <th>IPCA Base BCB</th><th>IPCA Projetado</th>
@@ -993,6 +1014,9 @@ function recalcSuav(){
     </tr>`;
   });
   document.getElementById('sv_res_tbl').innerHTML=h+'</tbody>';
+  } catch(e) {
+    console.error('Erro em recalcSuav():', e);
+  }
 }
 
 // ═══════════════════════════════════════════════════

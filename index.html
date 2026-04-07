@@ -226,7 +226,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
         <input type="number" id="proj_cop" value="3.30" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Próxima reunião<br><small style="font-weight:400;color:var(--muted)">define horizonte automaticamente</small></label>
         <select id="prox_reuniao" onchange="onReunChange()">
-          <option value="abr26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027">abr/26 (278ª) → HR: 4T2027</option>
+          <option value="abr26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027" selected>abr/26 (278ª) → HR: 4T2027</option>
           <option value="jun26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027">jun/26 (279ª) → HR: 4T2027</option>
           <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (280ª) → HR: 1T2028</option>
           <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (281ª) → HR: 1T2028</option>
@@ -259,7 +259,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
 
   <button class="btn-calc" onclick="recalc()">▶ Recalcular</button>
   <button class="btn-reset" onclick="resetAll()">↺ Restaurar defaults</button>
-  <button class="btn-calc" onclick="updateFromBCB()" style="background:var(--bcb2);margin-top:8px">🔄 Atualizar dados do BCB</button>
+  <button class="btn-calc" onclick="updateFromBCB(this)" style="background:var(--bcb2);margin-top:8px">🔄 Atualizar dados do BCB</button>
 </div><!-- /left -->
 
 <div class="right">
@@ -1145,8 +1145,11 @@ function resetAll(){
 // ═══════════════════════════════════════════════════
 // INTEGRAÇÃO COM APIs DO BCB
 // ═══════════════════════════════════════════════════
-async function updateFromBCB(){
-  const btn = event.target;
+async function updateFromBCB(btn){
+  // Se chamado via onclick, btn vem como parâmetro; se não, busca o botão
+  if(!btn) btn = document.querySelector('button[onclick="updateFromBCB(this)"]');
+  if(!btn) return; // Segurança
+  
   btn.disabled = true;
   btn.textContent = '⏳ Buscando dados...';
   
@@ -1165,6 +1168,7 @@ async function updateFromBCB(){
         if(ptaxData.value && ptaxData.value.length > 0){
           const latest = ptaxData.value[0];
           cambioPTAX = latest.cotacaoVenda || latest.cotacaoCompra;
+          console.log('✓ PTAX:', cambioPTAX);
         }
       }
     } catch(e) { console.log('PTAX error:', e); }
@@ -1178,8 +1182,8 @@ async function updateFromBCB(){
         const selicData = await selicRes.json();
         if(selicData.value && selicData.value.length > 0){
           const latest = selicData.value[0];
-          // Pega a mediana para o próximo mês disponível
-          selicMediana = latest.MedianaSelic || parseFloat(latest.medianadaSelic);
+          selicMediana = latest.MedianaSelic || parseFloat(latest.Mediana);
+          console.log('✓ Selic:', selicMediana);
         }
       }
     } catch(e) { console.log('Selic error:', e); }
@@ -1192,16 +1196,16 @@ async function updateFromBCB(){
       if(focusRes.ok){
         const focusData = await focusRes.json();
         if(focusData.value && focusData.value.length > 0){
-          // Procura a projeção mais recente para cada ano
           for(let item of focusData.value){
             if(item.Ano === 2026 && !focus26){
-              focus26 = parseFloat(item.Mediana || item.mediana);
+              focus26 = parseFloat(item.Mediana);
             }
             if(item.Ano === 2027 && !focus27){
-              focus27 = parseFloat(item.Mediana || item.mediana);
+              focus27 = parseFloat(item.Mediana);
             }
             if(focus26 && focus27) break;
           }
+          console.log('✓ Focus 2026:', focus26, 'Focus 2027:', focus27);
         }
       }
     } catch(e) { console.log('Focus error:', e); }
@@ -1209,20 +1213,19 @@ async function updateFromBCB(){
     // Atualizar os campos com os dados obtidos
     let updated = false;
     
-    if(cambioPTAX){
+    if(cambioPTAX && !isNaN(cambioPTAX)){
       document.getElementById('cx1').value = Number(cambioPTAX).toFixed(4);
       updated = true;
     }
-    if(selicMediana !== null && selicMediana !== undefined){
-      // A mediana está em % a.a. - simplifica o valor
+    if(selicMediana !== null && !isNaN(selicMediana)){
       document.getElementById('s0').value = Number(selicMediana).toFixed(2);
       updated = true;
     }
-    if(focus26){
+    if(focus26 && !isNaN(focus26)){
       document.getElementById('f26_1').value = Number(focus26).toFixed(2);
       updated = true;
     }
-    if(focus27){
+    if(focus27 && !isNaN(focus27)){
       document.getElementById('f27_1').value = Number(focus27).toFixed(2);
       updated = true;
     }
@@ -1233,17 +1236,17 @@ async function updateFromBCB(){
       setTimeout(()=>{
         btn.textContent = '🔄 Atualizar dados do BCB';
         btn.disabled = false;
-      }, 2000);
+      }, 2500);
     } else {
       btn.textContent = '⚠️ Nenhum dado obtido';
       setTimeout(()=>{
         btn.textContent = '🔄 Atualizar dados do BCB';
         btn.disabled = false;
-      }, 2000);
+      }, 2500);
     }
     
   } catch(err) {
-    console.error('Erro ao atualizar:', err);
+    console.error('Erro:', err);
     btn.textContent = '❌ Erro na atualização';
     setTimeout(()=>{
       btn.textContent = '🔄 Atualizar dados do BCB';
@@ -1252,9 +1255,7 @@ async function updateFromBCB(){
   }
 }
 
-window.addEventListener('load',()=>{ recalc(); });
-
-window.addEventListener('load',()=>{ recalc(); });
+window.addEventListener('load',()=>{ onReunChange(); });
 </script>
 </body>
 </html>

@@ -274,16 +274,6 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
           <div class="sv" id="sn_val">—</div>
           <div class="ss" id="sn_sub" style="font-size:9px">—</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <label style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">Selic flat:</label>
-          <input type="number" id="flat_sel" value="14.75" step="0.25" min="5" max="20" oninput="calcFlat()"
-            style="width:80px;padding:5px 7px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;font-family:monospace;font-weight:700">
-          <div class="flat-res" style="flex:1;padding:6px 10px">
-            <div class="frl">IPCA flat:</div>
-            <div class="frv" id="flat_val" style="font-size:16px">—</div>
-            <div class="frs" id="flat_sub" style="font-size:9px">—</div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -423,16 +413,6 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
           <div class="sl">🎯 Selic flat p/ meta</div>
           <div class="sv" id="sv_sn_val">—</div>
           <div class="ss" id="sv_sn_sub" style="font-size:9px">—</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <label style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">Selic flat:</label>
-          <input type="number" id="sv_flat_sel" value="14.75" step="0.25" min="5" max="20" oninput="calcFlatSuav()"
-            style="width:80px;padding:5px 7px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;font-family:monospace;font-weight:700">
-          <div class="flat-res" style="flex:1;padding:6px 10px">
-            <div class="frl">IPCA flat:</div>
-            <div class="frv" id="sv_flat_val" style="font-size:16px">—</div>
-            <div class="frs" id="sv_flat_sub" style="font-size:9px">—</div>
-          </div>
         </div>
       </div>
     </div>
@@ -722,9 +702,6 @@ function recalc(){
     `Cenário atual chega em ${sfim.toFixed(2).replace('.',',')}% · `+
     (sn>sfim?`precisa +${(sn-sfim).toFixed(2).replace('.',',')} p.p.`:`trajetória suficiente`);
 
-  // Selic flat
-  calcFlat();
-
   // Tabela Selic
   buildSelicTable(s0,hcop,hprox);
 
@@ -941,7 +918,6 @@ function recalcSuav(){
   const sv_ss=document.getElementById('sv_sn_sub');
   if(sv_sn) sv_sn.textContent=sn_suav.toFixed(2).replace('.',',')+'%';
   if(sv_ss) sv_ss.textContent=`Cenário atual chega em ${buildTri(s0,D[1])[7].toFixed(2).replace('.',',')}%`;
-  calcFlatSuav();
 
 
   // Decomposição
@@ -1381,7 +1357,9 @@ async function updateFromBCB(btn){
     console.log('  Focus 2027:', {focus27, isValid: focus27 && !isNaN(focus27)});
     
     if(cambioPTAX && !isNaN(cambioPTAX)){
-      document.getElementById('cx1').value = Number(cambioPTAX).toFixed(4);
+      document.getElementById('cx1').value = Number(cambioPTAX).toFixed(2);
+      const sv_cx1 = document.getElementById('sv_cx1');
+      if(sv_cx1) sv_cx1.value = Number(cambioPTAX).toFixed(2);
       console.log('✅ Câmbio atualizado:', cambioPTAX);
       updated = true;
     } else {
@@ -1389,6 +1367,8 @@ async function updateFromBCB(btn){
     }
     if(selicCenario !== null && !isNaN(selicCenario)){
       document.getElementById('s0').value = Number(selicCenario).toFixed(2);
+      const sv_s0 = document.getElementById('sv_s0');
+      if(sv_s0) sv_s0.value = Number(selicCenario).toFixed(2);
       console.log('✅ Selic Cenário atualizada:', selicCenario);
       updated = true;
     } else {
@@ -1396,6 +1376,8 @@ async function updateFromBCB(btn){
     }
     if(focus26 && !isNaN(focus26)){
       document.getElementById('f26_1').value = Number(focus26).toFixed(2);
+      const sv_f26_1 = document.getElementById('sv_f26_1');
+      if(sv_f26_1) sv_f26_1.value = Number(focus26).toFixed(2);
       console.log('✅ Focus 2026 atualizado:', focus26);
       updated = true;
     } else {
@@ -1403,6 +1385,8 @@ async function updateFromBCB(btn){
     }
     if(focus27 && !isNaN(focus27)){
       document.getElementById('f27_1').value = Number(focus27).toFixed(2);
+      const sv_f27_1 = document.getElementById('sv_f27_1');
+      if(sv_f27_1) sv_f27_1.value = Number(focus27).toFixed(2);
       console.log('✅ Focus 2027 atualizado:', focus27);
       updated = true;
     } else {
@@ -1411,6 +1395,7 @@ async function updateFromBCB(btn){
     
     if(updated){
       recalc();
+      recalcSuav();
       btn.textContent = '✅ Dados atualizados!';
       setTimeout(()=>{
         btn.textContent = '🔄 Atualizar dados do BCB';

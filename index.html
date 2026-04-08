@@ -1196,7 +1196,7 @@ async function updateFromBCB(btn){
 
         if(valores.length > 0) {
           const media = valores.reduce((a, b) => a + b, 0) / valores.length;
-          cambioPTAX = media.toFixed(4);
+          cambioPTAX = media.toFixed(2);
           console.log(`✅ Câmbio PTAX média (${valores.length} dias úteis): ${cambioPTAX}`);
           console.log(`  Datas: ${datas.join(', ')}`);
           console.log(`  Valores: ${valores.map(v => v.toFixed(4)).join(', ')}`);

@@ -1219,23 +1219,52 @@ async function updateFromBCB(btn){
       }
     } catch(e) { console.error('❌ PTAX erro geral:', e); }
     
-    // 2. Buscar Selic expectativa (última mediana)
+    // 2. Buscar Selic expectativa (próxima reunião COPOM)
     let selicMediana = null;
     try {
-      const selicUrl = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$top=1&$orderby=Data%20desc&$format=json';
+      // Busca a Selic por reunião (não apenas a última)
+      // Precisa filtrar pela próxima reunião
+      const selicUrl = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$top=100&$orderby=Data%20desc&$format=json';
+      console.log('🔗 Selic URL:', selicUrl);
       const selicRes = await fetch(selicUrl);
       if(selicRes.ok){
         const selicData = await selicRes.json();
-        console.log('📊 Selic Response:', selicData.value?.[0]);
+        console.log('📊 Selic Total records:', selicData.value?.length);
+        
         if(selicData.value && selicData.value.length > 0){
-          const latest = selicData.value[0];
-          console.log('Selic item keys:', Object.keys(latest));
-          // Tenta diferentes nomes de campo
-          selicMediana = latest.MedianaSelic || latest.Mediana || latest['Mediana de Expectativa'];
-          console.log('✅ Selic:', selicMediana);
+          // Mostra estrutura do primeiro item
+          const sample = selicData.value[0];
+          console.log('Selic item keys:', Object.keys(sample));
+          console.log('Sample Selic item:', JSON.stringify(sample).substring(0, 300));
+          
+          // Tenta diferentes abordagens para encontrar o valor correto
+          // Primeira tentativa: busca por "Reuniao" (próxima reunião)
+          const prxReuniao = document.getElementById('prox_reuniao')?.value || 'abr/26';
+          console.log('Procurando Selic para reunião:', prxReuniao);
+          
+          // Filtra por Reunião se o campo existir
+          const reuniaoItems = selicData.value.filter(x => 
+            x.Reuniao && String(x.Reuniao).toLowerCase().includes(prxReuniao.split('/')[0])
+          );
+          
+          if(reuniaoItems.length > 0){
+            const firstMatch = reuniaoItems[0];
+            selicMediana = firstMatch.Mediana || firstMatch.Media;
+            console.log('✅ Selic encontrada por Reunião:', selicMediana);
+          } else {
+            // Se não encontrar por Reunião, tenta pegar o primeiro valor (mais recente)
+            const latest = selicData.value[0];
+            selicMediana = latest.Mediana || latest.Media;
+            console.log('⚠️ Selic por Reunião não encontrada. Usando mais recente:', selicMediana);
+          }
+          
+          if(selicMediana) {
+            selicMediana = Number(selicMediana);
+            console.log('✅ Selic Final:', selicMediana);
+          }
         }
       } else {
-        console.warn('⚠️ Selic Status:', selicRes.status);
+        console.warn('⚠️ Selic HTTP Status:', selicRes.status);
       }
     } catch(e) { console.error('❌ Selic error:', e); }
     

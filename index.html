@@ -1164,44 +1164,67 @@ async function updateFromBCB(btn){
   btn.textContent = '⏳ Buscando dados...';
   
   try {
-    // 1. Buscar Câmbio (PTAX) — última cotação
+    // 1. Buscar Câmbio (PTAX) — média dos últimos 10 dias úteis
     let cambioPTAX = null;
     try {
-      // Tenta múltiplos endpoints PTAX
-      const ptaxUrls = [
-        'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Cotacao?$top=1&$orderby=Data%20desc&$format=json',
-        'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDia?$top=1&$orderby=data%20desc&$format=json',
-        'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolar?$top=1&$orderby=data%20desc&$format=json'
-      ];
+      // Calcula intervalo de 10 dias úteis (usa 14 dias corridos para garantir)
+      const hoje = new Date();
+      const dataFinal = new Date(hoje); // Hoje
+      const dataInicial = new Date(hoje.getTime() - 14*24*60*60*1000); // 14 dias atrás
       
-      for(const ptaxUrl of ptaxUrls) {
-        try {
-          console.log('🔗 Tentando PTAX:', ptaxUrl);
-          const ptaxRes = await fetch(ptaxUrl);
-          console.log('  Status:', ptaxRes.status);
+      // Formata em MM-DD-YYYY (formato esperado pela API)
+      const fmt = (d) => {
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${month}-${day}-${year}`;
+      };
+      
+      const dtIni = fmt(dataInicial);
+      const dtFim = fmt(dataFinal);
+      
+      // Endpoint correto com parâmetros OData
+      const ptaxUrl = `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinal=@dataFinal)?@dataInicial='${dtIni}'&@dataFinal='${dtFim}'&$top=100&$orderby=dataHoraCotacao%20desc&$select=cotacaoCompra,cotacaoVenda,dataHoraCotacao&$format=json`;
+      
+      console.log('🔗 PTAX URL:', ptaxUrl);
+      const ptaxRes = await fetch(ptaxUrl);
+      console.log('  Status:', ptaxRes.status);
+      
+      if(ptaxRes.ok){
+        const ptaxData = await ptaxRes.json();
+        console.log('📊 PTAX Resposta:', ptaxData.value?.slice(0, 3));
+        
+        if(ptaxData.value && ptaxData.value.length > 0){
+          // Mostra estrutura
+          const sample = ptaxData.value[0];
+          console.log('  Keys:', Object.keys(sample));
           
-          if(ptaxRes.ok){
-            const ptaxData = await ptaxRes.json();
-            if(ptaxData.value && ptaxData.value.length > 0){
-              const latest = ptaxData.value[0];
-              console.log('  ✓ Resposta PTAX válida. Keys:', Object.keys(latest).slice(0, 5));
-              // Tenta diferentes nomes de campos
-              cambioPTAX = latest.cotacaoVenda || latest.cotacaoCompra || latest.Venda || latest.Compra;
-              if(cambioPTAX) {
-                cambioPTAX = Number(cambioPTAX).toFixed(4);
-                console.log('✅ PTAX encontrado:', cambioPTAX);
-                break; // sai ao encontrar
-              }
+          // Calcula média simples de cotação venda dos últimos registros
+          const cotacoes = ptaxData.value.map(x => Number(x.cotacaoVenda)).filter(x => !isNaN(x));
+          if(cotacoes.length > 0){
+            const media = cotacoes.reduce((a, b) => a + b, 0) / cotacoes.length;
+            // Arredonda na segunda casa decimal em intervalos de 5 centavos
+            cambioPTAX = (Math.round(media * 200) / 200).toFixed(4);
+            console.log(`✅ PTAX média (${cotacoes.length} registros):`, cambioPTAX);
+          }
+        }
+      } else {
+        console.warn('⚠️ PTAX HTTP Status:', ptaxRes.status);
+        // Se erro, tenta endpoint alternativo simples
+        try {
+          console.log('  Tentando endpoint alternativo...');
+          const altUrl = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDia?$top=1&$orderby=dataHoraCotacao%20desc&$format=json';
+          const altRes = await fetch(altUrl);
+          if(altRes.ok){
+            const altData = await altRes.json();
+            if(altData.value && altData.value.length > 0){
+              cambioPTAX = Number(altData.value[0].cotacaoVenda).toFixed(4);
+              console.log('✅ PTAX alternativo:', cambioPTAX);
             }
           }
-        } catch(eu) {
-          console.log('  ✗ Endpoint falhou:', eu.message);
-          continue;
+        } catch(e2) {
+          console.log('  Alternativo também falhou');
         }
-      }
-      
-      if(!cambioPTAX) {
-        console.warn('⚠️ PTAX não encontrado em nenhum endpoint');
       }
     } catch(e) { console.error('❌ PTAX erro geral:', e); }
     
@@ -1219,7 +1242,7 @@ async function updateFromBCB(btn){
         if(selicData.value && selicData.value.length > 0){
           const sample = selicData.value[0];
           console.log('Selic item keys:', Object.keys(sample));
-          console.log('Sample Selic:', JSON.stringify(sample).substring(0, 300));
+          console.log('Sample Selic:', JSON.stringify(sample).substring(0, 400));
           
           // Data de corte: 18/03/2026 (último Copom)
           const dtCopomStr = '2026-03-18';
@@ -1231,9 +1254,12 @@ async function updateFromBCB(btn){
           selicData.value.forEach(item => {
             if(!item.Reuniao || !item.Data || item.Mediana === null) return;
             
-            const reuniao = String(item.Reuniao).trim();
+            const reuniao = String(item.Reuniao).trim(); // Ex: "R2/2026", "R1/2027"
             const data = String(item.Data).substring(0, 10); // "2026-04-02"
             const mediana = Number(item.Mediana);
+            
+            // Filtra apenas reuniões de 2026 e 2027
+            if(!reuniao.includes('/2026') && !reuniao.includes('/2027')) return;
             
             if(!byReuniao[reuniao]) {
               byReuniao[reuniao] = {
@@ -1253,17 +1279,27 @@ async function updateFromBCB(btn){
             }
           });
           
-          console.log('📋 Reuniões encontradas:', Object.keys(byReuniao).slice(0, 5));
+          console.log('📋 Reuniões de 2026/2027 encontradas:', Object.keys(byReuniao));
           
-          // Criar trajetória para reuniões esperadas
-          const reunioesEsperadas = ['2T26', '3T26', '4T26', '1T27', '2T27', '3T27', '4T27', '1T28'];
-          reunioesEsperadas.forEach(reu => {
-            if(byReuniao[reu]) {
-              selicTrajetoria[reu] = {
-                cenario: byReuniao[reu].recente?.mediana || null,
-                baseCopom: byReuniao[reu].antesCorte?.mediana || null,
-                dataRecente: byReuniao[reu].recente?.data || null,
-                dataBaseCopom: byReuniao[reu].antesCorte?.data || null
+          // Criar trajetória - mapear Rn/YYYY para nTyy
+          Object.entries(byReuniao).forEach(([reuniaoCode, dados]) => {
+            // Mapear "R2/2026" -> "2T26", "R3/2026" -> "3T26", etc
+            // R1 -> 1T, R2 -> 2T, R3 -> 3T, R4 -> 4T
+            // Assumindo que existem 4 reuniões por ano trimestralmente
+            const match = reuniaoCode.match(/R(\d+)\/(\d{4})/);
+            if(match) {
+              const nReuniao = parseInt(match[1]);
+              const ano = match[2];
+              const anoAbr = ano.substring(2); // "2026" -> "26"
+              const trimestre = Math.ceil(nReuniao / 1); // Cada reunião é um trimestre
+              const codTri = `${trimestre}T${anoAbr}`;
+              
+              selicTrajetoria[reuniaoCode] = {
+                codTrimestre: codTri,
+                cenario: dados.recente?.mediana || null,
+                baseCopom: dados.antesCorte?.mediana || null,
+                dataRecente: dados.recente?.data || null,
+                dataBaseCopom: dados.antesCorte?.data || null
               };
             }
           });
@@ -1335,19 +1371,30 @@ async function updateFromBCB(btn){
     // Extrair Selic para próxima reunião a partir da trajetória
     let selicCenario = null, selicBaseCopom = null;
     if(Object.keys(selicTrajetoria).length > 0) {
-      // Mapear mês/ano para código de reunião
+      // Mapear mês/ano para código de reunião esperado (ex: abr/26 -> procura por reunião de 2T26)
       const prxReuniaoText = document.getElementById('prox_reuniao')?.value || 'abr/26';
+      
+      // Mapa: mês -> código de trimestre
       const mapReuniao = {
         'abr': '2T26', 'jun': '3T26', 'ago': '4T26',
         'jan': '1T27', 'mar': '1T27', 'mai': '2T27', 'jul': '3T27', 'set': '3T27', 'nov': '4T27'
       };
       const mesAbr = prxReuniaoText.split('/')[0];
-      const codReuniao = mapReuniao[mesAbr] || '2T26';
+      const codTrimestreEsperado = mapReuniao[mesAbr] || '2T26';
       
-      if(selicTrajetoria[codReuniao]) {
-        selicCenario = selicTrajetoria[codReuniao].cenario;
-        selicBaseCopom = selicTrajetoria[codReuniao].baseCopom;
-        console.log(`📊 Selic para reunião ${codReuniao}:`, {cenario: selicCenario, baseCopom: selicBaseCopom});
+      // Procura na trajetória pela reunião que corresponde ao trimestre esperado
+      const reuniaoEncontrada = Object.entries(selicTrajetoria).find(([reuniao, dados]) => 
+        dados.codTrimestre === codTrimestreEsperado
+      );
+      
+      if(reuniaoEncontrada) {
+        const [reuniao, dados] = reuniaoEncontrada;
+        selicCenario = dados.cenario;
+        selicBaseCopom = dados.baseCopom;
+        console.log(`📊 Selic para reunião ${reuniao} (${codTrimestreEsperado}):`, {cenario: selicCenario, baseCopom: selicBaseCopom});
+      } else {
+        console.warn('⚠️ Reunião', codTrimestreEsperado, 'não encontrada na trajetória');
+        console.log('  Disponíveis:', Object.entries(selicTrajetoria).map(([r, d]) => `${r}(${d.codTrimestre})`));
       }
     }
     

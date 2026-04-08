@@ -1205,12 +1205,11 @@ async function updateFromBCB(btn){
       }
     } catch(e) { console.error('❌ PTAX erro geral:', e); }
     
-    // 2. Buscar Selic expectativa (próxima reunião COPOM)
-    let selicMediana = null;
+    // 2. Buscar Selic expectativa POR REUNIÃO (Cenário = mais recente, Base Copom = antes de 18/03/2026)
+    let selicTrajetoria = {}; // {reuniao: {cenario: X, baseCopom: Y, ...}}
     try {
-      // Busca a Selic por reunião (não apenas a última)
-      // Precisa filtrar pela próxima reunião
-      const selicUrl = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$top=100&$orderby=Data%20desc&$format=json';
+      // Busca histórico completo de Selic
+      const selicUrl = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$top=1000&$orderby=Data%20desc&$format=json';
       console.log('🔗 Selic URL:', selicUrl);
       const selicRes = await fetch(selicUrl);
       if(selicRes.ok){
@@ -1218,36 +1217,58 @@ async function updateFromBCB(btn){
         console.log('📊 Selic Total records:', selicData.value?.length);
         
         if(selicData.value && selicData.value.length > 0){
-          // Mostra estrutura do primeiro item
           const sample = selicData.value[0];
           console.log('Selic item keys:', Object.keys(sample));
-          console.log('Sample Selic item:', JSON.stringify(sample).substring(0, 300));
+          console.log('Sample Selic:', JSON.stringify(sample).substring(0, 300));
           
-          // Tenta diferentes abordagens para encontrar o valor correto
-          // Primeira tentativa: busca por "Reuniao" (próxima reunião)
-          const prxReuniao = document.getElementById('prox_reuniao')?.value || 'abr/26';
-          console.log('Procurando Selic para reunião:', prxReuniao);
+          // Data de corte: 18/03/2026 (último Copom)
+          const dtCopomStr = '2026-03-18';
           
-          // Filtra por Reunião se o campo existir
-          const reuniaoItems = selicData.value.filter(x => 
-            x.Reuniao && String(x.Reuniao).toLowerCase().includes(prxReuniao.split('/')[0])
-          );
+          // Agrupa por Reuniao e pega:
+          // - Mais recente (para Cenário)
+          // - Mais recente antes de 18/03/2026 (para Base Copom)
+          const byReuniao = {};
+          selicData.value.forEach(item => {
+            if(!item.Reuniao || !item.Data || item.Mediana === null) return;
+            
+            const reuniao = String(item.Reuniao).trim();
+            const data = String(item.Data).substring(0, 10); // "2026-04-02"
+            const mediana = Number(item.Mediana);
+            
+            if(!byReuniao[reuniao]) {
+              byReuniao[reuniao] = {
+                recente: null,
+                antesCorte: null
+              };
+            }
+            
+            // Mais recente geral (para Cenário)
+            if(!byReuniao[reuniao].recente) {
+              byReuniao[reuniao].recente = {mediana, data};
+            }
+            
+            // Mais recente ANTES de 18/03/2026 (para Base Copom)
+            if(data <= dtCopomStr && !byReuniao[reuniao].antesCorte) {
+              byReuniao[reuniao].antesCorte = {mediana, data};
+            }
+          });
           
-          if(reuniaoItems.length > 0){
-            const firstMatch = reuniaoItems[0];
-            selicMediana = firstMatch.Mediana || firstMatch.Media;
-            console.log('✅ Selic encontrada por Reunião:', selicMediana);
-          } else {
-            // Se não encontrar por Reunião, tenta pegar o primeiro valor (mais recente)
-            const latest = selicData.value[0];
-            selicMediana = latest.Mediana || latest.Media;
-            console.log('⚠️ Selic por Reunião não encontrada. Usando mais recente:', selicMediana);
-          }
+          console.log('📋 Reuniões encontradas:', Object.keys(byReuniao).slice(0, 5));
           
-          if(selicMediana) {
-            selicMediana = Number(selicMediana);
-            console.log('✅ Selic Final:', selicMediana);
-          }
+          // Criar trajetória para reuniões esperadas
+          const reunioesEsperadas = ['2T26', '3T26', '4T26', '1T27', '2T27', '3T27', '4T27', '1T28'];
+          reunioesEsperadas.forEach(reu => {
+            if(byReuniao[reu]) {
+              selicTrajetoria[reu] = {
+                cenario: byReuniao[reu].recente?.mediana || null,
+                baseCopom: byReuniao[reu].antesCorte?.mediana || null,
+                dataRecente: byReuniao[reu].recente?.data || null,
+                dataBaseCopom: byReuniao[reu].antesCorte?.data || null
+              };
+            }
+          });
+          
+          console.log('✅ Trajetória Selic montada:', selicTrajetoria);
         }
       } else {
         console.warn('⚠️ Selic HTTP Status:', selicRes.status);
@@ -1311,9 +1332,28 @@ async function updateFromBCB(btn){
     // Atualizar os campos com os dados obtidos
     let updated = false;
     
+    // Extrair Selic para próxima reunião a partir da trajetória
+    let selicCenario = null, selicBaseCopom = null;
+    if(Object.keys(selicTrajetoria).length > 0) {
+      // Mapear mês/ano para código de reunião
+      const prxReuniaoText = document.getElementById('prox_reuniao')?.value || 'abr/26';
+      const mapReuniao = {
+        'abr': '2T26', 'jun': '3T26', 'ago': '4T26',
+        'jan': '1T27', 'mar': '1T27', 'mai': '2T27', 'jul': '3T27', 'set': '3T27', 'nov': '4T27'
+      };
+      const mesAbr = prxReuniaoText.split('/')[0];
+      const codReuniao = mapReuniao[mesAbr] || '2T26';
+      
+      if(selicTrajetoria[codReuniao]) {
+        selicCenario = selicTrajetoria[codReuniao].cenario;
+        selicBaseCopom = selicTrajetoria[codReuniao].baseCopom;
+        console.log(`📊 Selic para reunião ${codReuniao}:`, {cenario: selicCenario, baseCopom: selicBaseCopom});
+      }
+    }
+    
     console.log('📋 Resumo dos dados encontrados:');
     console.log('  Câmbio:', {cambioPTAX, isValid: cambioPTAX && !isNaN(cambioPTAX)});
-    console.log('  Selic:', {selicMediana, isValid: selicMediana !== null && !isNaN(selicMediana)});
+    console.log('  Selic:', {cenario: selicCenario, baseCopom: selicBaseCopom, trajetorias: Object.keys(selicTrajetoria).length});
     console.log('  Focus 2026:', {focus26, isValid: focus26 && !isNaN(focus26)});
     console.log('  Focus 2027:', {focus27, isValid: focus27 && !isNaN(focus27)});
     
@@ -1324,9 +1364,9 @@ async function updateFromBCB(btn){
     } else {
       console.warn('⚠️ Câmbio NÃO atualizado');
     }
-    if(selicMediana !== null && !isNaN(selicMediana)){
-      document.getElementById('s0').value = Number(selicMediana).toFixed(2);
-      console.log('✅ Selic atualizada:', selicMediana);
+    if(selicCenario !== null && !isNaN(selicCenario)){
+      document.getElementById('s0').value = Number(selicCenario).toFixed(2);
+      console.log('✅ Selic Cenário atualizada:', selicCenario);
       updated = true;
     } else {
       console.warn('⚠️ Selic NÃO atualizada');

@@ -237,20 +237,6 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     </div>
   </div>
 
-  <div class="rbox rbox-cop">
-    <div class="rl">Último Copom</div>
-    <div class="rm" id="rc_mtg">277ª · T+6 (3T2027)</div>
-    <div class="rv" id="rc_val">3,30%</div>
-    <div class="rs">BCB oficial · meta 3,0%</div>
-  </div>
-
-  <div class="rbox" id="rp_block" style="background:linear-gradient(135deg,var(--bcb),var(--bcb2))">
-    <div class="rl">Próxima Reunião</div>
-    <div class="rm" id="rp_mtg">—</div>
-    <div class="rv" id="rp_val">—</div>
-    <div class="rs" id="rp_sub">—</div>
-  </div>
-
   <div class="sn-box">
     <div class="sl">🎯 Selic flat p/ IPCA = meta no horizonte</div>
     <div class="sv" id="sn_val">—</div>
@@ -763,7 +749,7 @@ function recalc(){
   ];
   document.getElementById('imp_wrap').innerHTML=imps.map(x=>{
     const c=x.pct?(x.v>4.5?'var(--red)':x.v>meta+.5?'var(--amber)':x.v<=meta?'var(--green)':'var(--bcb2)'):col(x.v);
-    const t=x.pct?`${x.v.toFixed(2).replace('.',',')}%`:`${x.pct||x.l==='∑ Total'?'':'+'}${fmt(x.v)} p.p.`;
+    const t=x.pct?`${x.v.toFixed(2).replace('.',',')}%`:(x.l==='∑ Total'?fmt(x.v):fmt(x.v))+' p.p.';
     return `<div class="imp-item"><div class="il">${x.l}</div><div class="iv" style="color:${c}">${t}</div><div class="is">${x.s}</div></div>`;
   }).join('');
 

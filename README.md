@@ -72,15 +72,15 @@ Imp_Câmbio = (Var_Cambio / 10) × FRI_cambio(T+N)
 
 ---
 
-### 3️⃣ **Brent USD (Gráfico 5 do RI Jun/24)**
+### 3️⃣ **Brent USD (RPM Jun/25)**
 
 Resposta ao **choque de 10% de apreciação do petróleo** (em USD)
 
 | T+0 | T+1 | T+2 | T+3 | T+4 | T+5 | T+6 | T+7 | T+8 | T+9 | T+10 |
 |-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|
-| 0,0 | 0,10 | 0,25 | 0,35 | 0,45 | **0,40** | 0,35 | 0,30 | 0,30 | 0,28 | 0,25 |
+| 0,0 | 0,10 | 0,30 | 0,40 | 0,50 | **0,40** | 0,30 | 0,20 | 0,20 | 0,19 | 0,19 |
 
-**Interpretação**: Alta de 10% no Brent aumenta o IPCA em até +0,40 p.p. (pico em T+5)
+**Interpretação**: Alta de 10% no Brent aumenta o IPCA em até +0,50 p.p. (pico em T+4)
 
 **Cálculo do impacto**:
 ```

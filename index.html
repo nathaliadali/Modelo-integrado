@@ -1181,29 +1181,43 @@ async function updateFromBCB(btn){
     // 1. Buscar Câmbio (PTAX) — última cotação
     let cambioPTAX = null;
     try {
-      // Usa API simplificada sem parâmetros complexos
-      // Busca o último cotação com cotação descendente
-      const ptaxUrl = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia?$top=1&$orderby=data%20desc&$format=json';
-      console.log('🔗 PTAX URL:', ptaxUrl);
-      const ptaxRes = await fetch(ptaxUrl);
-      console.log('PTAX Status:', ptaxRes.status);
-      if(ptaxRes.ok){
-        const ptaxData = await ptaxRes.json();
-        console.log('📊 PTAX Response:', ptaxData.value?.[0]);
-        if(ptaxData.value && ptaxData.value.length > 0){
-          const latest = ptaxData.value[0];
-          console.log('PTAX item keys:', Object.keys(latest));
-          // Procura cotação venda ou compra
-          cambioPTAX = latest.cotacaoVenda || latest.cotacaoCompra;
-          if(cambioPTAX) {
-            cambioPTAX = Number(cambioPTAX).toFixed(4);
-            console.log('✅ PTAX:', cambioPTAX);
+      // Tenta múltiplos endpoints PTAX
+      const ptaxUrls = [
+        'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/Cotacao?$top=1&$orderby=Data%20desc&$format=json',
+        'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDia?$top=1&$orderby=data%20desc&$format=json',
+        'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolar?$top=1&$orderby=data%20desc&$format=json'
+      ];
+      
+      for(const ptaxUrl of ptaxUrls) {
+        try {
+          console.log('🔗 Tentando PTAX:', ptaxUrl);
+          const ptaxRes = await fetch(ptaxUrl);
+          console.log('  Status:', ptaxRes.status);
+          
+          if(ptaxRes.ok){
+            const ptaxData = await ptaxRes.json();
+            if(ptaxData.value && ptaxData.value.length > 0){
+              const latest = ptaxData.value[0];
+              console.log('  ✓ Resposta PTAX válida. Keys:', Object.keys(latest).slice(0, 5));
+              // Tenta diferentes nomes de campos
+              cambioPTAX = latest.cotacaoVenda || latest.cotacaoCompra || latest.Venda || latest.Compra;
+              if(cambioPTAX) {
+                cambioPTAX = Number(cambioPTAX).toFixed(4);
+                console.log('✅ PTAX encontrado:', cambioPTAX);
+                break; // sai ao encontrar
+              }
+            }
           }
+        } catch(eu) {
+          console.log('  ✗ Endpoint falhou:', eu.message);
+          continue;
         }
-      } else {
-        console.warn('⚠️ PTAX HTTP Status:', ptaxRes.status);
       }
-    } catch(e) { console.error('❌ PTAX error:', e); }
+      
+      if(!cambioPTAX) {
+        console.warn('⚠️ PTAX não encontrado em nenhum endpoint');
+      }
+    } catch(e) { console.error('❌ PTAX erro geral:', e); }
     
     // 2. Buscar Selic expectativa (última mediana)
     let selicMediana = null;

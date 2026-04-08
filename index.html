@@ -1225,65 +1225,90 @@ async function updateFromBCB(btn){
     // 3. Buscar Focus IPCA 2026 e 2027
     let focus26 = null, focus27 = null;
     try {
-      const focusUrl = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?$filter=Indicador%20eq%20%27IPCA%27&$top=100&$orderby=Data%20desc&$format=json";
+      // Tenta buscar por ano específico
+      const focusUrl = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?$filter=Indicador%20eq%20%27IPCA%27&$top=1000&$orderby=Data%20desc&$format=json";
       const focusRes = await fetch(focusUrl);
       if(focusRes.ok){
         const focusData = await focusRes.json();
-        console.log('📊 Focus Response completo:', focusData.value?.slice(0, 5));
+        console.log('📊 Total de registros Focus:', focusData.value?.length);
+        console.log('Primeiros 10 items:', focusData.value?.slice(0, 10).map(x => ({Ano: x.Ano, Mediana: x.Mediana, Data: x.Data})));
         
         if(focusData.value && focusData.value.length > 0){
-          // Debug: mostra estrutura do primeiro item
-          console.log('First Focus item keys:', Object.keys(focusData.value[0]));
-          console.log('First Focus item:', JSON.stringify(focusData.value[0]));
+          // Debug: mostra estrutura completa do primeiro item
+          const sample = focusData.value[0];
+          console.log('Sample item keys:', Object.keys(sample));
+          console.log('Sample item completo:', JSON.stringify(sample, null, 2).substring(0, 500));
           
-          for(let item of focusData.value){
-            // Tenta vários nomes de campo para Ano
-            const ano = item.Ano || item.ano || item['AnoCalendario'] || item['Ano Calendário'];
-            // Tenta vários nomes para Mediana
-            const mediana = item.Mediana || item.mediana || item['MedianadasExpectativas'] || item['Mediana das Expectativas'];
-            
-            console.log(`Processando item: Ano=${ano}, Mediana=${mediana}`);
-            
-            if(ano === 2026 && !focus26 && mediana){
-              focus26 = parseFloat(mediana);
-              console.log('✅ Focus 2026 encontrado:', focus26);
+          // Busca mais agressiva - procura pelos valores mais recentes de cada ano
+          const ano2026Items = focusData.value.filter(x => (x.Ano === 2026 || x.ano === 2026));
+          const ano2027Items = focusData.value.filter(x => (x.Ano === 2027 || x.ano === 2027));
+          
+          console.log('Items 2026 encontrados:', ano2026Items.length, 'valores:', ano2026Items.slice(0, 3).map(x => x.Mediana || x.mediana));
+          console.log('Items 2027 encontrados:', ano2027Items.length, 'valores:', ano2027Items.slice(0, 3).map(x => x.Mediana || x.mediana));
+          
+          if(ano2026Items.length > 0){
+            const m26 = ano2026Items[0].Mediana || ano2026Items[0].mediana;
+            if(m26 && !isNaN(parseFloat(m26))){
+              focus26 = parseFloat(m26);
+              console.log('✅ Focus 2026 encontrado:', focus26, 'do item:', JSON.stringify(ano2026Items[0]).substring(0, 200));
             }
-            if(ano === 2027 && !focus27 && mediana){
-              focus27 = parseFloat(mediana);
-              console.log('✅ Focus 2027 encontrado:', focus27);
+          }
+          if(ano2027Items.length > 0){
+            const m27 = ano2027Items[0].Mediana || ano2027Items[0].mediana;
+            if(m27 && !isNaN(parseFloat(m27))){
+              focus27 = parseFloat(m27);
+              console.log('✅ Focus 2027 encontrado:', focus27, 'do item:', JSON.stringify(ano2027Items[0]).substring(0, 200));
             }
-            if(focus26 && focus27) break;
           }
           
           if(!focus26 || !focus27){
-            console.warn('⚠️ Focus não totalmente encontrado (26:', focus26, ', 27:', focus27, ')');
+            console.warn('⚠️ Valores não encontrados. Listando TUDO:');
+            focusData.value.forEach((x, i) => {
+              console.log(`[${i}] Ano=${x.Ano}, Mediana=${x.Mediana}, Data=${x.Data}`);
+            });
           }
         }
       } else {
-        console.warn('⚠️ Focus Status:', focusRes.status);
+        console.error('❌ Focus HTTP Error:', focusRes.status, focusRes.statusText);
       }
     } catch(e) { console.error('❌ Focus error:', e); }
     
     // Atualizar os campos com os dados obtidos
     let updated = false;
     
+    console.log('📋 Resumo dos dados encontrados:');
+    console.log('  Câmbio:', {cambioPTAX, isValid: cambioPTAX && !isNaN(cambioPTAX)});
+    console.log('  Selic:', {selicMediana, isValid: selicMediana !== null && !isNaN(selicMediana)});
+    console.log('  Focus 2026:', {focus26, isValid: focus26 && !isNaN(focus26)});
+    console.log('  Focus 2027:', {focus27, isValid: focus27 && !isNaN(focus27)});
+    
     if(cambioPTAX && !isNaN(cambioPTAX)){
       document.getElementById('cx1').value = Number(cambioPTAX).toFixed(4);
+      console.log('✅ Câmbio atualizado:', cambioPTAX);
       updated = true;
+    } else {
+      console.warn('⚠️ Câmbio NÃO atualizado');
     }
     if(selicMediana !== null && !isNaN(selicMediana)){
       document.getElementById('s0').value = Number(selicMediana).toFixed(2);
+      console.log('✅ Selic atualizada:', selicMediana);
       updated = true;
+    } else {
+      console.warn('⚠️ Selic NÃO atualizada');
     }
     if(focus26 && !isNaN(focus26)){
       document.getElementById('f26_1').value = Number(focus26).toFixed(2);
-      console.log('📝 Focus 2026 atualizado:', focus26);
+      console.log('✅ Focus 2026 atualizado:', focus26);
       updated = true;
+    } else {
+      console.warn('⚠️ Focus 2026 NÃO atualizado');
     }
     if(focus27 && !isNaN(focus27)){
       document.getElementById('f27_1').value = Number(focus27).toFixed(2);
-      console.log('📝 Focus 2027 atualizado:', focus27);
+      console.log('✅ Focus 2027 atualizado:', focus27);
       updated = true;
+    } else {
+      console.warn('⚠️ Focus 2027 NÃO atualizado');
     }
     
     if(updated){

@@ -1181,24 +1181,27 @@ async function updateFromBCB(btn){
     // 1. Buscar Câmbio (PTAX) — última cotação
     let cambioPTAX = null;
     try {
-      const today = new Date();
-      const endDate = today.toLocaleDateString('pt-BR', {year:'numeric', month:'2-digit', day:'2-digit'}).split('/').reverse().join('-');
-      const startDate = new Date(today.getTime() - 30*24*60*60*1000).toLocaleDateString('pt-BR', {year:'numeric', month:'2-digit', day:'2-digit'}).split('/').reverse().join('-');
-      
-      const ptaxUrl = `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinal=@dataFinal)?@dataInicial='${startDate}'&@dataFinal='${endDate}'&$top=1&$orderby=data%20desc&$format=json`;
+      // Usa API simplificada sem parâmetros complexos
+      // Busca o último cotação com cotação descendente
+      const ptaxUrl = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia?$top=1&$orderby=data%20desc&$format=json';
       console.log('🔗 PTAX URL:', ptaxUrl);
       const ptaxRes = await fetch(ptaxUrl);
+      console.log('PTAX Status:', ptaxRes.status);
       if(ptaxRes.ok){
         const ptaxData = await ptaxRes.json();
-        console.log('📊 PTAX Response:', ptaxData.value?.slice(0, 3));
+        console.log('📊 PTAX Response:', ptaxData.value?.[0]);
         if(ptaxData.value && ptaxData.value.length > 0){
           const latest = ptaxData.value[0];
-          console.log('PTAX item sample:', Object.keys(latest));
+          console.log('PTAX item keys:', Object.keys(latest));
+          // Procura cotação venda ou compra
           cambioPTAX = latest.cotacaoVenda || latest.cotacaoCompra;
-          console.log('✅ PTAX:', cambioPTAX);
+          if(cambioPTAX) {
+            cambioPTAX = Number(cambioPTAX).toFixed(4);
+            console.log('✅ PTAX:', cambioPTAX);
+          }
         }
       } else {
-        console.warn('⚠️ PTAX Status:', ptaxRes.status);
+        console.warn('⚠️ PTAX HTTP Status:', ptaxRes.status);
       }
     } catch(e) { console.error('❌ PTAX error:', e); }
     
@@ -1239,32 +1242,35 @@ async function updateFromBCB(btn){
           console.log('Sample item keys:', Object.keys(sample));
           console.log('Sample item completo:', JSON.stringify(sample, null, 2).substring(0, 500));
           
-          // Busca mais agressiva - procura pelos valores mais recentes de cada ano
-          const ano2026Items = focusData.value.filter(x => (x.Ano === 2026 || x.ano === 2026));
-          const ano2027Items = focusData.value.filter(x => (x.Ano === 2027 || x.ano === 2027));
+          // FIX: O campo correto é DataReferencia (string), não Ano
+          // Filtra por DataReferencia (como string: "2026", "2027")
+          const ano2026Items = focusData.value.filter(x => String(x.DataReferencia) === "2026");
+          const ano2027Items = focusData.value.filter(x => String(x.DataReferencia) === "2027");
           
-          console.log('Items 2026 encontrados:', ano2026Items.length, 'valores:', ano2026Items.slice(0, 3).map(x => x.Mediana || x.mediana));
-          console.log('Items 2027 encontrados:', ano2027Items.length, 'valores:', ano2027Items.slice(0, 3).map(x => x.Mediana || x.mediana));
+          console.log('Items 2026 encontrados:', ano2026Items.length, 'valores:', ano2026Items.slice(0, 3).map(x => x.Mediana));
+          console.log('Items 2027 encontrados:', ano2027Items.length, 'valores:', ano2027Items.slice(0, 3).map(x => x.Mediana));
           
           if(ano2026Items.length > 0){
-            const m26 = ano2026Items[0].Mediana || ano2026Items[0].mediana;
+            const m26 = ano2026Items[0].Mediana;
             if(m26 && !isNaN(parseFloat(m26))){
               focus26 = parseFloat(m26);
-              console.log('✅ Focus 2026 encontrado:', focus26, 'do item:', JSON.stringify(ano2026Items[0]).substring(0, 200));
+              console.log('✅ Focus 2026 encontrado:', focus26, 'DataReferencia:', ano2026Items[0].DataReferencia);
             }
           }
           if(ano2027Items.length > 0){
-            const m27 = ano2027Items[0].Mediana || ano2027Items[0].mediana;
+            const m27 = ano2027Items[0].Mediana;
             if(m27 && !isNaN(parseFloat(m27))){
               focus27 = parseFloat(m27);
-              console.log('✅ Focus 2027 encontrado:', focus27, 'do item:', JSON.stringify(ano2027Items[0]).substring(0, 200));
+              console.log('✅ Focus 2027 encontrado:', focus27, 'DataReferencia:', ano2027Items[0].DataReferencia);
             }
           }
           
           if(!focus26 || !focus27){
-            console.warn('⚠️ Valores não encontrados. Listando TUDO:');
-            focusData.value.forEach((x, i) => {
-              console.log(`[${i}] Ano=${x.Ano}, Mediana=${x.Mediana}, Data=${x.Data}`);
+            console.warn('⚠️ Valores não encontrados. Inspecionando DataReferencia:');
+            const uniqueYears = [...new Set(focusData.value.map(x => x.DataReferencia))];
+            console.log('Anos disponíveis:', uniqueYears);
+            focusData.value.slice(0, 20).forEach((x, i) => {
+              console.log(`[${i}] DataReferencia=${x.DataReferencia}, Mediana=${x.Mediana}, Data=${x.Data}`);
             });
           }
         }

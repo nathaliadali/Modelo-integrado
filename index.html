@@ -1167,66 +1167,58 @@ async function updateFromBCB(btn){
     // 1. Buscar Câmbio (PTAX) — média dos últimos 10 dias úteis
     let cambioPTAX = null;
     try {
-      // Calcula intervalo de 10 dias úteis (usa 14 dias corridos para garantir)
-      const hoje = new Date();
-      const dataFinal = new Date(hoje); // Hoje
-      const dataInicial = new Date(hoje.getTime() - 14*24*60*60*1000); // 14 dias atrás
+      console.log('🔄 Buscando câmbio dos últimos 10 dias úteis...');
+      const valores = [];
+      const datas = [];
+      let dataAtual = new Date();
+      let diasUteis = 0;
       
-      // Formata em MM-DD-YYYY (formato esperado pela API)
-      const fmt = (d) => {
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const year = d.getFullYear();
-        return `${month}-${day}-${year}`;
-      };
-      
-      const dtIni = fmt(dataInicial);
-      const dtFim = fmt(dataFinal);
-      
-      // Endpoint correto com parâmetros OData
-      const ptaxUrl = `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinal=@dataFinal)?@dataInicial='${dtIni}'&@dataFinal='${dtFim}'&$top=100&$orderby=dataHoraCotacao%20desc&$select=cotacaoCompra,cotacaoVenda,dataHoraCotacao&$format=json`;
-      
-      console.log('🔗 PTAX URL:', ptaxUrl);
-      const ptaxRes = await fetch(ptaxUrl);
-      console.log('  Status:', ptaxRes.status);
-      
-      if(ptaxRes.ok){
-        const ptaxData = await ptaxRes.json();
-        console.log('📊 PTAX Resposta:', ptaxData.value?.slice(0, 3));
+      // Retroceder para coletar 10 dias úteis
+      while(diasUteis < 10) {
+        dataAtual.setDate(dataAtual.getDate() - 1);
+        const diaSemana = dataAtual.getDay();
         
-        if(ptaxData.value && ptaxData.value.length > 0){
-          // Mostra estrutura
-          const sample = ptaxData.value[0];
-          console.log('  Keys:', Object.keys(sample));
-          
-          // Calcula média simples de cotação venda dos últimos registros
-          const cotacoes = ptaxData.value.map(x => Number(x.cotacaoVenda)).filter(x => !isNaN(x));
-          if(cotacoes.length > 0){
-            const media = cotacoes.reduce((a, b) => a + b, 0) / cotacoes.length;
-            // Arredonda na segunda casa decimal em intervalos de 5 centavos
-            cambioPTAX = (Math.round(media * 200) / 200).toFixed(4);
-            console.log(`✅ PTAX média (${cotacoes.length} registros):`, cambioPTAX);
-          }
+        // Pular sábado (6) e domingo (0)
+        if(diaSemana === 0 || diaSemana === 6) {
+          continue;
         }
-      } else {
-        console.warn('⚠️ PTAX HTTP Status:', ptaxRes.status);
-        // Se erro, tenta endpoint alternativo simples
+        
+        const dataStr = dataAtual.toISOString().split('T')[0]; // YYYY-MM-DD
+        
         try {
-          console.log('  Tentando endpoint alternativo...');
-          const altUrl = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDia?$top=1&$orderby=dataHoraCotacao%20desc&$format=json';
-          const altRes = await fetch(altUrl);
-          if(altRes.ok){
-            const altData = await altRes.json();
-            if(altData.value && altData.value.length > 0){
-              cambioPTAX = Number(altData.value[0].cotacaoVenda).toFixed(4);
-              console.log('✅ PTAX alternativo:', cambioPTAX);
+          const url = `https://api.exchangerate.host/${dataStr}?base=USD&symbols=BRL`;
+          const res = await fetch(url);
+          
+          if(res.ok) {
+            const data = await res.json();
+            if(data.rates && data.rates.BRL) {
+              valores.push(data.rates.BRL);
+              datas.push(dataStr);
+            } else {
+              console.log(`  ⚠️ Sem dados para ${dataStr}`);
             }
+          } else {
+            console.log(`  ⚠️ Status ${res.status} para ${dataStr}`);
           }
-        } catch(e2) {
-          console.log('  Alternativo também falhou');
+        } catch(e) {
+          console.log(`  ⚠️ Erro ao buscar ${dataStr}:`, e.message);
         }
+        
+        diasUteis++;
       }
-    } catch(e) { console.error('❌ PTAX erro geral:', e); }
+      
+      if(valores.length > 0) {
+        const media = valores.reduce((a, b) => a + b, 0) / valores.length;
+        cambioPTAX = media.toFixed(4);
+        console.log(`✅ Câmbio média (${valores.length} dias úteis): ${cambioPTAX}`);
+        console.log(`  Datas: ${datas.join(', ')}`);
+        console.log(`  Valores: ${valores.map(v => v.toFixed(4)).join(', ')}`);
+      } else {
+        console.warn('⚠️ Não foi possível obter dados de câmbio');
+      }
+    } catch(e) { 
+      console.error('❌ Câmbio erro geral:', e); 
+    }
     
     // 2. Buscar Selic expectativa POR REUNIÃO (Cenário = mais recente, Base Copom = antes de 18/03/2026)
     let selicTrajetoria = {}; // {reuniao: {cenario: X, baseCopom: Y, ...}}

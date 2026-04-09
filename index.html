@@ -686,7 +686,6 @@ function recalc(){
 
     const ri = calcImpactos(s0,st,D[1],hproxValid);
     const rows = calcTraj(s0,st,D[1]);
-    const sn = calcSelicNec(s0,st,hproxValid);
     const d = ri.proj-meta;
 
   // Pills
@@ -704,9 +703,6 @@ function recalc(){
     ri.proj>meta+0.5?'linear-gradient(135deg,#78350f,#b45309)':
     ri.proj<=meta?'linear-gradient(135deg,#14532d,#15803d)':
     'linear-gradient(135deg,var(--bcb),var(--bcb2))';
-
-  // Selic flat
-  calcFlat();
 
   // Tabela Selic
   buildSelicTable(s0,hcop,hprox);
@@ -765,6 +761,7 @@ function recalc(){
   } catch(e) {
     console.error('Erro em recalc():', e);
   }
+  calcFlat();
 }
 
 function calcFlat(){

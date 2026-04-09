@@ -47,6 +47,8 @@ body{font-family:'Palanquin',system-ui,sans-serif;background:var(--bg);color:var
 .inp-cell input[type=number],.inp-cell select{width:100%;padding:6px 9px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;font-family:monospace;font-weight:700;color:var(--text)}
 .inp-cell input[type=number]:focus,.inp-cell select:focus{outline:none;border-color:var(--bcb2)}
 .inp-cell input.cop{border-color:#fed7aa;background:#fff7ed}
+.var-inp{width:100%;padding:6px 9px;border:1.5px solid #c4b5fd;border-radius:5px;font-size:13px;font-family:monospace;font-weight:700;color:#6d28d9;background:#f5f3ff}
+.var-inp:focus{outline:none;border-color:#7c3aed}
 .inp-cell input.f26c{border-color:var(--cyan);background:#e8f9fc}
 .inp-cell input.f27c{border-color:var(--teal);background:#eaf4f9}
 .warn-box{background:#fef9c3;border:1px solid #fde68a;border-radius:5px;padding:6px 9px;font-size:10px;color:#78350f;line-height:1.4}
@@ -176,25 +178,33 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
 
   <div>
     <div class="sec-title">🌍 Variáveis Externas</div>
-    <div class="g2">
+    <div style="display:grid;grid-template-columns:1fr 1fr 72px;gap:8px">
       <div class="inp-cell"><label>Câmbio<br>último Copom (R$)</label>
-        <input type="number" id="cx0" value="5.20" step="0.05" min="3" max="10" class="cop" oninput="recalc()"></div>
+        <input type="number" id="cx0" value="5.20" step="0.05" min="3" max="10" class="cop" oninput="syncVar('cx0','cx1','cx_var');recalc()"></div>
       <div class="inp-cell"><label>Câmbio<br>atual (R$)</label>
-        <input type="number" id="cx1" value="5.20" step="0.01" min="3" max="10" oninput="recalc()"></div>
+        <input type="number" id="cx1" value="5.20" step="0.01" min="3" max="10" oninput="syncVar('cx0','cx1','cx_var');recalc()"></div>
+      <div class="inp-cell"><label>Var.<br>(%)</label>
+        <input type="number" id="cx_var" value="0.00" step="0.1" class="var-inp" oninput="syncFromVar('cx0','cx1','cx_var',2);recalc()"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 72px;gap:8px;margin-top:8px">
       <div class="inp-cell"><label>IC-Br (USD)<br>último Copom</label>
-        <input type="number" id="cm0" value="83" step="1" min="30" max="300" class="cop" oninput="recalc()"></div>
+        <input type="number" id="cm0" value="83" step="1" min="30" max="300" class="cop" oninput="syncVar('cm0','cm1','cm_var');recalc()"></div>
       <div class="inp-cell"><label>IC-Br (USD)<br>atual</label>
-        <input type="number" id="cm1" value="83" step="1" min="30" max="300" oninput="recalc()"></div>
+        <input type="number" id="cm1" value="83" step="1" min="30" max="300" oninput="syncVar('cm0','cm1','cm_var');recalc()"></div>
+      <div class="inp-cell"><label>Var.<br>(%)</label>
+        <input type="number" id="cm_var" value="0.00" step="0.1" class="var-inp" oninput="syncFromVar('cm0','cm1','cm_var',0);recalc()"></div>
     </div>
   </div>
 
   <div>
     <div class="sec-title">🛢️ Brent – opcional (isolado do IC-Br)</div>
-    <div class="g2">
+    <div style="display:grid;grid-template-columns:1fr 1fr 72px;gap:8px">
       <div class="inp-cell"><label>Brent (US$)<br>último Copom</label>
-        <input type="number" id="br0" value="75" step="1" min="20" max="200" class="cop" oninput="recalc()"></div>
+        <input type="number" id="br0" value="75" step="1" min="20" max="200" class="cop" oninput="syncVar('br0','br1','br_var');recalc()"></div>
       <div class="inp-cell"><label>Brent (US$)<br>atual</label>
-        <input type="number" id="br1" value="75" step="1" min="20" max="200" oninput="recalc()"></div>
+        <input type="number" id="br1" value="75" step="1" min="20" max="200" oninput="syncVar('br0','br1','br_var');recalc()"></div>
+      <div class="inp-cell"><label>Var.<br>(%)</label>
+        <input type="number" id="br_var" value="0.00" step="0.1" class="var-inp" oninput="syncFromVar('br0','br1','br_var',0);recalc()"></div>
     </div>
     <div class="warn-box" style="margin-top:6px">⚠️ Use Brent <b>ou</b> IC-Br — não os dois. Brent é componente do IC-Br. Ambos em USD.</div>
   </div>
@@ -326,25 +336,33 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
 
   <div>
     <div class="sec-title">🌍 Variáveis Externas</div>
-    <div class="g2">
+    <div style="display:grid;grid-template-columns:1fr 1fr 72px;gap:8px">
       <div class="inp-cell"><label>Câmbio<br>último Copom (R$)</label>
-        <input type="number" id="sv_cx0" value="5.20" step="0.05" min="3" max="10" class="cop" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_cx0" value="5.20" step="0.05" min="3" max="10" class="cop" oninput="syncVar('sv_cx0','sv_cx1','sv_cx_var');recalcSuav()"></div>
       <div class="inp-cell"><label>Câmbio<br>atual (R$)</label>
-        <input type="number" id="sv_cx1" value="5.20" step="0.01" min="3" max="10" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_cx1" value="5.20" step="0.01" min="3" max="10" oninput="syncVar('sv_cx0','sv_cx1','sv_cx_var');recalcSuav()"></div>
+      <div class="inp-cell"><label>Var.<br>(%)</label>
+        <input type="number" id="sv_cx_var" value="0.00" step="0.1" class="var-inp" oninput="syncFromVar('sv_cx0','sv_cx1','sv_cx_var',2);recalcSuav()"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 72px;gap:8px;margin-top:8px">
       <div class="inp-cell"><label>IC-Br (USD)<br>último Copom</label>
-        <input type="number" id="sv_cm0" value="83" step="1" min="30" max="300" class="cop" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_cm0" value="83" step="1" min="30" max="300" class="cop" oninput="syncVar('sv_cm0','sv_cm1','sv_cm_var');recalcSuav()"></div>
       <div class="inp-cell"><label>IC-Br (USD)<br>atual</label>
-        <input type="number" id="sv_cm1" value="83" step="1" min="30" max="300" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_cm1" value="83" step="1" min="30" max="300" oninput="syncVar('sv_cm0','sv_cm1','sv_cm_var');recalcSuav()"></div>
+      <div class="inp-cell"><label>Var.<br>(%)</label>
+        <input type="number" id="sv_cm_var" value="0.00" step="0.1" class="var-inp" oninput="syncFromVar('sv_cm0','sv_cm1','sv_cm_var',0);recalcSuav()"></div>
     </div>
   </div>
 
   <div>
     <div class="sec-title">🛢️ Brent (FRI = 50% do modelo completo)</div>
-    <div class="g2">
+    <div style="display:grid;grid-template-columns:1fr 1fr 72px;gap:8px">
       <div class="inp-cell"><label>Brent (US$)<br>último Copom</label>
-        <input type="number" id="sv_br0" value="75" step="1" min="20" max="200" class="cop" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_br0" value="75" step="1" min="20" max="200" class="cop" oninput="syncVar('sv_br0','sv_br1','sv_br_var');recalcSuav()"></div>
       <div class="inp-cell"><label>Brent (US$)<br>atual</label>
-        <input type="number" id="sv_br1" value="75" step="1" min="20" max="200" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_br1" value="75" step="1" min="20" max="200" oninput="syncVar('sv_br0','sv_br1','sv_br_var');recalcSuav()"></div>
+      <div class="inp-cell"><label>Var.<br>(%)</label>
+        <input type="number" id="sv_br_var" value="0.00" step="0.1" class="var-inp" oninput="syncFromVar('sv_br0','sv_br1','sv_br_var',0);recalcSuav()"></div>
     </div>
     <div class="warn-box" style="margin-top:6px">📉 Neste modelo o pass-through do Brent é <b>50% menor</b> que no modelo completo — reflete incerteza sobre persistência do choque de petróleo.</div>
   </div>
@@ -665,6 +683,28 @@ function updateD(col,idx,val){ D[col][idx]=val; recalc(); }
 
 // ═══════════════════════════════════════════════════
 // RECALCULAR
+// ═══════════════════════════════════════════════════
+// SINCRONIZAÇÃO BIDIRECIONAL: atual ↔ variação %
+// ═══════════════════════════════════════════════════
+function syncVar(id0, id1, idVar) {
+  // Chamado quando base ou atual muda → recalcula variação
+  const v0 = parseFloat(document.getElementById(id0)?.value);
+  const v1 = parseFloat(document.getElementById(id1)?.value);
+  const el = document.getElementById(idVar);
+  if(el && v0 && v0 !== 0) {
+    el.value = ((v1 - v0) / v0 * 100).toFixed(2);
+  }
+}
+function syncFromVar(id0, id1, idVar, decimals) {
+  // Chamado quando variação muda → recalcula atual
+  const v0 = parseFloat(document.getElementById(id0)?.value);
+  const varPct = parseFloat(document.getElementById(idVar)?.value);
+  const el1 = document.getElementById(id1);
+  if(el1 && !isNaN(v0) && !isNaN(varPct)) {
+    el1.value = (v0 * (1 + varPct / 100)).toFixed(decimals);
+  }
+}
+
 // ═══════════════════════════════════════════════════
 function recalc(){
   try {
@@ -1358,6 +1398,8 @@ async function updateFromBCB(btn){
       document.getElementById('cx1').value = Number(cambioPTAX).toFixed(2);
       const sv_cx1 = document.getElementById('sv_cx1');
       if(sv_cx1) sv_cx1.value = Number(cambioPTAX).toFixed(2);
+      syncVar('cx0','cx1','cx_var');
+      syncVar('sv_cx0','sv_cx1','sv_cx_var');
       console.log('✅ Câmbio atualizado:', cambioPTAX);
       updated = true;
     } else {

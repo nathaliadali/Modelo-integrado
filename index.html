@@ -247,10 +247,10 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
   <div class="card">
     <div class="card-hdr">
       <h3>💰 Trajetória Selic – bps por reunião</h3>
-      <span>Selic hoje: <b id="selic_lbl">14,75%</b> (pós-mar/26) · Base Copom = referência da 277ª · Cenário = seu teste · ★ HR Copom · ★★ HR próximo</span>
+      <span>Selic hoje: <b id="selic_lbl">14,75%</b> (pós-mar/26) · Base Copom = referência da 277ª · Atual = seu teste · ★ HR Copom · ★★ HR próximo</span>
     </div>
     <div class="selic-wrap"><table class="st" id="selic_tbl"></table></div>
-    <div style="padding:5px 12px 8px;font-size:10px;color:var(--muted)">Jan/26 e mar/26 já realizados (não aparecem). Base Copom = trajetória embutida no proj_cop (3,30%). Cenário = edite para testar.</div>
+    <div style="padding:5px 12px 8px;font-size:10px;color:var(--muted)">Jan/26 e mar/26 já realizados (não aparecem). Base Copom = trajetória embutida no proj_cop (3,30%). Atual = edite para testar.</div>
   </div>
 
   <div class="card">
@@ -629,9 +629,9 @@ function buildSelicTable(s0, hcop, hprox, tblId='selic_tbl'){
   let h=`<thead><tr>
     <th>Reunião</th><th>Tri</th>
     <th title="Trajetória da 277ª reunião (base do proj_cop)">Base Copom<br><small>(bps)</small></th>
-    <th title="Edite para testar">Cenário<br><small>(bps)</small></th>
+    <th title="Edite para testar">Atual<br><small>(bps)</small></th>
     <th>Selic Base<br><small>(%a.a.)</small></th>
-    <th>Selic Cenário<br><small>(%a.a.)</small></th>
+    <th>Selic Atual<br><small>(%a.a.)</small></th>
     <th>Δ<br><small>(bps)</small></th>
   </tr></thead><tbody>`;
 
@@ -741,7 +741,7 @@ function recalc(){
   const TRI_HOP = TRI_RESULT[hcop-1];
   const TRI_HPP = TRI_RESULT[hprox-1];
   let h=`<thead><tr>
-    <th>Trimestre</th><th>Selic Cenário</th><th>Selic Base</th>
+    <th>Trimestre</th><th>Selic Atual</th><th>Selic Base</th>
     <th>IPCA Base BCB</th><th>IPCA Projetado</th>
     <th>Δ vs. Base</th><th>vs. Meta</th>
     <th>Imp. Selic</th><th>Imp. Câmbio</th><th>Imp. Brent</th>
@@ -957,7 +957,7 @@ function recalcSuav(){
   // Tabela resultado
   const TRI_HOP=TRI_RESULT[hcopValid-1], TRI_HPP=TRI_RESULT[hproxValid-1];
   let h=`<thead><tr>
-    <th>Trimestre</th><th>Selic Cenário</th><th>Selic Base</th>
+    <th>Trimestre</th><th>Selic Atual</th><th>Selic Base</th>
     <th>IPCA Base BCB</th><th>IPCA Projetado</th>
     <th>Δ vs. Base</th><th>vs. Meta</th>
     <th>Imp. Selic</th><th>Imp. Câmbio</th><th>Imp. Brent ×0,5</th>

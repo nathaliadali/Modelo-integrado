@@ -705,13 +705,6 @@ function recalc(){
     ri.proj<=meta?'linear-gradient(135deg,#14532d,#15803d)':
     'linear-gradient(135deg,var(--bcb),var(--bcb2))';
 
-  // Selic necessária
-  document.getElementById('sn_val').textContent=sn.toFixed(2).replace('.',',')+'%';
-  const sfim=buildTri(s0,D[1])[7];
-  document.getElementById('sn_sub').textContent=
-    `Cenário atual chega em ${sfim.toFixed(2).replace('.',',')}% · `+
-    (sn>sfim?`precisa +${(sn-sfim).toFixed(2).replace('.',',')} p.p.`:`trajetória suficiente`);
-
   // Selic flat
   calcFlat();
 
@@ -925,12 +918,6 @@ function recalcSuav(){
     ri.proj>meta+0.5?'linear-gradient(135deg,#78350f,#b45309)':
     ri.proj<=meta?'linear-gradient(135deg,#14532d,#15803d)':
     'linear-gradient(135deg,var(--bcb),var(--bcb2))';
-  // Selic necessária suavizado
-  const sn_suav=calcSelicNec(s0,st,hproxValid);
-  const sv_sn=document.getElementById('sv_sn_val');
-  const sv_ss=document.getElementById('sv_sn_sub');
-  if(sv_sn) sv_sn.textContent=sn_suav.toFixed(2).replace('.',',')+'%';
-  if(sv_ss) sv_ss.textContent=`Cenário atual chega em ${buildTri(s0,D[1])[7].toFixed(2).replace('.',',')}%`;
   calcFlatSuav();
 
 

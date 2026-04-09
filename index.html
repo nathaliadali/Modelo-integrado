@@ -1032,15 +1032,17 @@ function goTab(tab,btn){
 // CENÁRIOS SELIC
 // ═══════════════════════════════════════════════════
 // 3 arrays de deltas editáveis pelo usuário (um por cenário)
+// Cenário 1: valores customizados (abr/26 a dez/27)
+// índices:    2    3    4    5    6    7    8    9   10   11   12   13   14  15
+const SC1_CUSTOM = [0,0,-30,-26,-24,-19,-14,-14,-14,-14,-11,-8,-5,-2,1,4];
 let SC = [
-  [...D[1]], // Cenário 1 — começa igual ao Cenário Atual (D[1])
-  [...D[0]], // Cenário 2 — começa igual ao Base Copom
-  [...D[0]], // Cenário 3 — começa igual ao Base Copom
+  [...SC1_CUSTOM], // Cenário 1 — valores customizados
+  [...D[0]],       // Cenário 2 — começa igual ao Base Copom
+  [...D[0]],       // Cenário 3 — começa igual ao Base Copom
 ];
 
 function initScenarios(){
-  // Sync SC: Cenário 1 = D[1] (Atual), Cenários 2 e 3 = D[0] (Base)
-  SC = [[...D[1]], [...D[0]], [...D[0]]];
+  SC = [[...SC1_CUSTOM], [...D[0]], [...D[0]]];
   renderScenarios();
 }
 
@@ -1143,7 +1145,7 @@ function updateSC(col, idx, val){
 }
 
 function resetScenarios(){
-  SC = [[...D[1]], [...D[0]], [...D[0]]]; // Cenário 1 = Atual, 2 e 3 = Base
+  SC = [[...SC1_CUSTOM], [...D[0]], [...D[0]]];
   renderScenarios();
 }
 

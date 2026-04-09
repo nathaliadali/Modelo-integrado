@@ -692,7 +692,7 @@ function syncVar(id0, id1, idVar) {
   const v1 = parseFloat(document.getElementById(id1)?.value);
   const el = document.getElementById(idVar);
   if(el && v0 && v0 !== 0) {
-    el.value = ((v1 - v0) / v0 * 100).toFixed(2);
+    el.value = ((v1 - v0) / v0 * 100).toFixed(1);
   }
 }
 function syncFromVar(id0, id1, idVar, decimals) {

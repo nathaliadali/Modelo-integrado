@@ -215,7 +215,8 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <div class="inp-cell"><label>Focus 2026<br>último Copom (%)</label>
         <input type="number" id="f26_0" value="4.10" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Focus 2026<br>atual (%)</label>
-        <input type="number" id="f26_1" value="4.31" step="0.05" min="0" max="15" class="f26c" oninput="recalc()"></div>
+        <input type="number" id="f26_1" value="4.31" step="0.05" min="0" max="15" class="f26c" oninput="recalc()">
+        <div id="f26_date" style="font-size:9px;color:var(--muted);margin-top:3px;min-height:12px"></div></div>
     </div>
   </div>
 
@@ -225,7 +226,8 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <div class="inp-cell"><label>Focus 2027<br>último Copom (%)</label>
         <input type="number" id="f27_0" value="3.80" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Focus 2027<br>atual (%)</label>
-        <input type="number" id="f27_1" value="3.84" step="0.05" min="0" max="15" class="f27c" oninput="recalc()"></div>
+        <input type="number" id="f27_1" value="3.84" step="0.05" min="0" max="15" class="f27c" oninput="recalc()">
+        <div id="f27_date" style="font-size:9px;color:var(--muted);margin-top:3px;min-height:12px"></div></div>
     </div>
   </div>
 
@@ -1302,7 +1304,7 @@ async function updateFromBCB(btn){
     } catch(e) { console.error('❌ Selic error:', e); }
     
     // 3. Buscar Focus IPCA 2026 e 2027
-    let focus26 = null, focus27 = null;
+    let focus26 = null, focus27 = null, focus26Date = null, focus27Date = null;
     try {
       // Tenta buscar por ano específico
       const focusUrl = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?$filter=Indicador%20eq%20%27IPCA%27&$top=1000&$orderby=Data%20desc&$format=json";
@@ -1330,14 +1332,16 @@ async function updateFromBCB(btn){
             const m26 = ano2026Items[0].Mediana;
             if(m26 && !isNaN(parseFloat(m26))){
               focus26 = parseFloat(m26);
-              console.log('✅ Focus 2026 encontrado:', focus26, 'DataReferencia:', ano2026Items[0].DataReferencia);
+              focus26Date = String(ano2026Items[0].Data).substring(0,10);
+              console.log('✅ Focus 2026 encontrado:', focus26, 'Data:', focus26Date);
             }
           }
           if(ano2027Items.length > 0){
             const m27 = ano2027Items[0].Mediana;
             if(m27 && !isNaN(parseFloat(m27))){
               focus27 = parseFloat(m27);
-              console.log('✅ Focus 2027 encontrado:', focus27, 'DataReferencia:', ano2027Items[0].DataReferencia);
+              focus27Date = String(ano2027Items[0].Data).substring(0,10);
+              console.log('✅ Focus 2027 encontrado:', focus27, 'Data:', focus27Date);
             }
           }
           
@@ -1418,6 +1422,12 @@ async function updateFromBCB(btn){
       document.getElementById('f26_1').value = Number(focus26).toFixed(2);
       const sv_f26_1 = document.getElementById('sv_f26_1');
       if(sv_f26_1) sv_f26_1.value = Number(focus26).toFixed(2);
+      if(focus26Date){
+        const d = focus26Date.split('-');
+        const txt = `Focus de ${d[2]}/${d[1]}/${d[0]}`;
+        const el = document.getElementById('f26_date');
+        if(el) el.textContent = txt;
+      }
       console.log('✅ Focus 2026 atualizado:', focus26);
       updated = true;
     } else {
@@ -1427,6 +1437,12 @@ async function updateFromBCB(btn){
       document.getElementById('f27_1').value = Number(focus27).toFixed(2);
       const sv_f27_1 = document.getElementById('sv_f27_1');
       if(sv_f27_1) sv_f27_1.value = Number(focus27).toFixed(2);
+      if(focus27Date){
+        const d = focus27Date.split('-');
+        const txt = `Focus de ${d[2]}/${d[1]}/${d[0]}`;
+        const el = document.getElementById('f27_date');
+        if(el) el.textContent = txt;
+      }
       console.log('✅ Focus 2027 atualizado:', focus27);
       updated = true;
     } else {

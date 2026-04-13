@@ -1232,7 +1232,7 @@ async function updateFromBCB(btn){
     let selicLevels = []; // [{dIdx, level}] para recompor D[1]
     try {
       // Busca histórico completo de Selic
-      const selicUrl = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$top=1000&$orderby=Data%20desc&$format=json';
+      const selicUrl = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$filter=baseCalculo%20eq%200&$top=1000&$orderby=Data%20desc&$format=json';
       console.log('🔗 Selic URL:', selicUrl);
       const selicRes = await fetch(selicUrl);
       if(selicRes.ok){

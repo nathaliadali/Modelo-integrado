@@ -1224,6 +1224,12 @@ async function updateFromBCB(btn){
     
     // 2. Buscar Selic expectativa POR REUNIÃO (Cenário = mais recente, Base Copom = antes de 18/03/2026)
     let selicTrajetoria = {}; // {reuniao: {cenario: X, baseCopom: Y, ...}}
+    // Mapeamento BCB Reuniao → índice em D[] (R1/2026=jan/26, R2/2026=mar/26, R3/2026=abr/26...)
+    const SELIC_D_MAP = {
+      'R1/2026':0,'R2/2026':1,'R3/2026':2,'R4/2026':3,'R5/2026':4,'R6/2026':5,'R7/2026':6,'R8/2026':7,
+      'R1/2027':8,'R2/2027':9,'R3/2027':10,'R4/2027':11,'R5/2027':12,'R6/2027':13,'R7/2027':14,'R8/2027':15,
+    };
+    let selicLevels = []; // [{dIdx, level}] para recompor D[1]
     try {
       // Busca histórico completo de Selic
       const selicUrl = 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$top=1000&$orderby=Data%20desc&$format=json';
@@ -1274,7 +1280,18 @@ async function updateFromBCB(btn){
           });
           
           console.log('📋 Reuniões de 2026/2027 encontradas:', Object.keys(byReuniao));
-          
+
+          // Coletar níveis de Selic por D[] index para atualizar D[1]
+          Object.entries(byReuniao).forEach(([code, dados]) => {
+            const dIdx = SELIC_D_MAP[code];
+            const level = dados.recente?.mediana;
+            if(dIdx !== undefined && level !== null && level !== undefined && !isNaN(Number(level))) {
+              selicLevels.push({dIdx, level: Number(level)});
+            }
+          });
+          selicLevels.sort((a, b) => a.dIdx - b.dIdx);
+          console.log('📊 Selic levels por D[] index:', selicLevels);
+
           // Criar trajetória - mapear Rn/YYYY para nTyy
           Object.entries(byReuniao).forEach(([reuniaoCode, dados]) => {
             // Mapear "R2/2026" -> "2T26", "R3/2026" -> "3T26", etc
@@ -1420,6 +1437,23 @@ async function updateFromBCB(btn){
     } else {
       console.warn('⚠️ Selic NÃO atualizada');
     }
+    // Atualizar D[1] com trajetória completa de reuniões futuras
+    if(selicLevels.length > 1) {
+      // Referência: nível em R2/2026 (mar/26, dIdx=1). Se ausente, usa selicCenario como s0.
+      const refEntry = selicLevels.find(e => e.dIdx === 1) || selicLevels.find(e => e.dIdx === 0);
+      let prevLevel = refEntry ? refEntry.level : (selicCenario || parseFloat(document.getElementById('s0')?.value || 14.75));
+      const newD1 = [...D[1]];
+      selicLevels.forEach(e => {
+        if(e.dIdx >= 2) {
+          newD1[e.dIdx] = Math.round((e.level - prevLevel) * 100); // bps
+          prevLevel = e.level;
+        }
+      });
+      D[1] = newD1;
+      SC[0] = [...D[1]]; // Atualiza coluna "Atual" nos Cenários Selic
+      console.log('✅ D[1] atualizado:', D[1]);
+      console.log('✅ SC[0] (Atual) atualizado');
+    }
     if(focus26 && !isNaN(focus26)){
       document.getElementById('f26_1').value = Number(focus26).toFixed(2);
       const sv_f26_1 = document.getElementById('sv_f26_1');
@@ -1454,6 +1488,7 @@ async function updateFromBCB(btn){
     if(updated){
       recalc();
       recalcSuav();
+      renderScenarios(); // Atualiza coluna "Atual" na aba Cenários Selic
       btn.textContent = '✅ Dados atualizados!';
       setTimeout(()=>{
         btn.textContent = '🔄 Atualizar dados do BCB';

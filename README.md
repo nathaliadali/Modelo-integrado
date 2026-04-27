@@ -60,9 +60,9 @@ Resposta ao **choque de 10% de depreciação cambial** (R$ enfraquecido)
 
 | T+0 | T+1 | T+2 | T+3 | T+4 | T+5 | T+6 | T+7 | T+8 | T+9 | T+10 |
 |-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|
-| 0,0 | 0,14 | 0,34 | 0,58 | **0,96** | 0,72 | 0,52 | 0,38 | 0,31 | 0,28 | 0,24 |
+| 0,0 | 0,20 | 0,35 | 0,58 | **0,90** | 0,72 | 0,60 | 0,40 | 0,31 | 0,28 | 0,24 |
 
-**Interpretação**: Uma depreciação de 10% do R$ aumenta o IPCA em até **+0,96 p.p.** (pico em T+4)
+**Interpretação**: Uma depreciação de 10% do R$ aumenta o IPCA em até **+0,90 p.p.** (pico em T+4)
 
 **Cálculo do impacto**:
 ```

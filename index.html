@@ -258,10 +258,10 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
   <div class="card">
     <div class="card-hdr">
       <h3>💰 Trajetória Selic – bps por reunião</h3>
-      <span>Selic hoje: <b id="selic_lbl">14,75%</b> (pós-abr/26) · Base Copom = referência da 278ª · Atual = seu teste · ★ HR Copom · ★★ HR próximo</span>
+      <span>Selic hoje: <b id="selic_lbl">—</b> · Base Copom = referência da <span id="selic_ref_reun"></span> · Atual = seu teste · ★ HR Copom · ★★ HR próximo</span>
     </div>
     <div class="selic-wrap"><table class="st" id="selic_tbl"></table></div>
-    <div style="padding:5px 12px 8px;font-size:10px;color:var(--muted)">Jan/26, mar/26 e abr/26 já realizados (não aparecem). Base Copom = trajetória embutida no proj_cop (3,50%). Atual = edite para testar.</div>
+    <div style="padding:5px 12px 8px;font-size:10px;color:var(--muted)" id="selic_footnote"></div>
   </div>
 
   <div class="card">
@@ -269,8 +269,8 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px">
       <div class="rbox rbox-cop" style="margin:0">
         <div class="rl">Último Copom</div>
-        <div class="rm" id="rc_mtg">278ª · T+7 (4T2027)</div>
-        <div class="rv" id="rc_val">3,50%</div>
+        <div class="rm" id="rc_mtg">—</div>
+        <div class="rv" id="rc_val">—</div>
         <div class="rs">BCB oficial · meta 3,0%</div>
       </div>
       <div class="rbox" id="rp_block" style="margin:0;background:linear-gradient(135deg,var(--bcb),var(--bcb2))">
@@ -282,7 +282,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <div style="display:flex;flex-direction:column;gap:8px">
         <div style="display:flex;align-items:center;gap:8px">
           <label style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">Selic flat:</label>
-          <input type="number" id="flat_sel" value="14.75" step="0.25" min="5" max="20" oninput="calcFlat()"
+          <input type="number" id="flat_sel" value="14.50" step="0.25" min="5" max="20" oninput="calcFlat()"
             style="width:80px;padding:5px 7px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;font-family:monospace;font-weight:700">
           <div class="flat-res" style="flex:1;padding:6px 10px">
             <div class="frl">IPCA flat:</div>
@@ -421,8 +421,8 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px">
       <div class="rbox rbox-cop" style="margin:0">
         <div class="rl">Último Copom</div>
-        <div class="rm" id="sv_rc_mtg2">278ª · T+7 (4T2027)</div>
-        <div class="rv" id="sv_rc_val2">3,50%</div>
+        <div class="rm" id="sv_rc_mtg2">—</div>
+        <div class="rv" id="sv_rc_val2">—</div>
         <div class="rs">BCB oficial · meta 3,0%</div>
       </div>
       <div class="rbox" id="sv_rp_block2" style="margin:0;background:linear-gradient(135deg,var(--bcb),var(--bcb2))">
@@ -434,7 +434,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <div style="display:flex;flex-direction:column;gap:8px">
         <div style="display:flex;align-items:center;gap:8px">
           <label style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">Selic flat:</label>
-          <input type="number" id="sv_flat_sel" value="14.75" step="0.25" min="5" max="20" oninput="calcFlatSuav()"
+          <input type="number" id="sv_flat_sel" value="14.50" step="0.25" min="5" max="20" oninput="calcFlatSuav()"
             style="width:80px;padding:5px 7px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;font-family:monospace;font-weight:700">
           <div class="flat-res" style="flex:1;padding:6px 10px">
             <div class="frl">IPCA flat:</div>
@@ -520,32 +520,69 @@ const FRI = {
   // Gráfico 8: resposta ao choque de 10% nas commodities (todas)
   comm:   [0, 0.25, 0.50, 0.70, 0.90, 0.65, 0.50, 0.40, 0.35, 0.30, 0.25],
 };
-// Tabela 2.2.1 RPM mar/26 · 2T26 3T26 4T26 1T27 2T27 3T27 4T27 1T28
-const BCB_BASE = [3.6, 3.7, 3.8, 3.9, 3.4, 3.5, 3.5, 3.2]; // 3T27 e 4T27 atualizados 279ª reunião
+// ═══════════════════════════════════════════════════
+// CONFIGURAÇÃO COPOM — atualizar após cada reunião
+// ═══════════════════════════════════════════════════
+const COPOM_CONFIG = {
+  // ── Última reunião realizada ──────────────────────
+  ultimaReuniao: {
+    numero: 278,            // número da reunião
+    label:  'abr/26',      // mês/ano para exibição
+    data:   '2026-04-16',  // data da reunião (corte na API do Focus)
+    tn:     7,             // T+N do horizonte relevante
+    tri:    '4T2027',      // trimestre do horizonte
+  },
+
+  // ── Variáveis macroeconômicas pós-reunião ─────────
+  s0:       14.50,  // Selic após o corte (% a.a.)
+  cx0:       5.00,  // Câmbio na véspera do Copom (R$)
+  f26_0:     4.86,  // Focus IPCA 2026 na véspera (%)
+  f27_0:     4.00,  // Focus IPCA 2027 na véspera (%)
+  proj_cop:  3.50,  // Projeção BCB no horizonte relevante (%)
+
+  // ── BCB_BASE: IPCA projetado pelo BCB (% a.t.) ────
+  // Índices: [2T26, 3T26, 4T26, 1T27, 2T27, 3T27, 4T27, 1T28]
+  bcbBase: [3.6, 3.7, 3.8, 3.9, 3.4, 3.5, 3.5, 3.2],
+
+  // ── D[0]: trajetória Base Copom (bps por reunião) ─
+  // 16 índices; os primeiros pastMeetings são 0 (embutidos em s0)
+  d0: [0,0,0, -25,-50,-25,-25,-25, -25,-25,-50,-25,-25,-25,-25,0],
+
+  // ── Reuniões passadas já embutidas em s0 ──────────
+  pastMeetings: 3,  // jan/26(idx 0), mar/26(idx 1), abr/26(idx 2)
+  pastMeetingLabels: ['Jan/26', 'Mar/26', 'Abr/26'],
+
+  // ── Reuniões futuras (tabela de trajetória Selic) ─
+  reun: [
+    {l:'jun/26', t:3, i:3,  tri:'2T26'},
+    {l:'ago/26', t:4, i:4,  tri:'3T26'}, {l:'set/26', t:4, i:5,  tri:'3T26'},
+    {l:'nov/26', t:5, i:6,  tri:'4T26'}, {l:'dez/26', t:5, i:7,  tri:'4T26'},
+    {l:'jan/27', t:6, i:8,  tri:'1T27'}, {l:'mar/27', t:6, i:9,  tri:'1T27'},
+    {l:'mai/27', t:7, i:10, tri:'2T27'}, {l:'jun/27', t:7, i:11, tri:'2T27'},
+    {l:'ago/27', t:8, i:12, tri:'3T27'}, {l:'set/27', t:8, i:13, tri:'3T27'},
+    {l:'nov/27', t:9, i:14, tri:'4T27'}, {l:'dez/27', t:9, i:15, tri:'4T27'},
+  ],
+
+  // ── Opções do dropdown "Próxima reunião" ──────────
+  proxReunOpts: [
+    {val:'jun26', label:'jun/26', num:279, hprox:7, hcop:7, lprox:'4T2027', lcop:'4T2027'},
+    {val:'ago26', label:'ago/26', num:280, hprox:8, hcop:7, lprox:'1T2028', lcop:'4T2027'},
+    {val:'set26', label:'set/26', num:281, hprox:8, hcop:7, lprox:'1T2028', lcop:'4T2027'},
+    {val:'nov26', label:'nov/26', num:282, hprox:8, hcop:8, lprox:'2T2028', lcop:'1T2028'},
+    {val:'dez26', label:'dez/26', num:283, hprox:8, hcop:8, lprox:'2T2028', lcop:'1T2028'},
+  ],
+
+  // ── Cenário 1 personalizado (bps por reunião) ─────
+  sc1Custom: [0,0,0, -26,-24,-19,-14,-14,-14,-14,-11,-8,-5,-2,1,4],
+};
+
+// ── Derivados do CONFIG (lidos pelo resto do código) ─
+const BCB_BASE   = COPOM_CONFIG.bcbBase;
 const TRI_RESULT = ['2T26','3T26','4T26','1T27','2T27','3T27','4T27','1T28'];
-
-// Reuniões futuras: r.t = índice de trimestre (1=1T26,...,8=4T27)
-// r.i = índice em D[] (0=jan/26, 1=mar/26, 2=abr/26...)
-// Mapeamento T+N → r.t: r.t = N+1 (ex: T+6=3T27 → r.t=7)
-const REUN = [
-  {l:'jun/26',t:3,i:3,tri:'2T26'},
-  {l:'ago/26',t:4,i:4,tri:'3T26'}, {l:'set/26',t:4,i:5,tri:'3T26'},
-  {l:'nov/26',t:5,i:6,tri:'4T26'}, {l:'dez/26',t:5,i:7,tri:'4T26'},
-  {l:'jan/27',t:6,i:8,tri:'1T27'}, {l:'mar/27',t:6,i:9,tri:'1T27'},
-  {l:'mai/27',t:7,i:10,tri:'2T27'},{l:'jun/27',t:7,i:11,tri:'2T27'},
-  {l:'ago/27',t:8,i:12,tri:'3T27'},{l:'set/27',t:8,i:13,tri:'3T27'},
-  {l:'nov/27',t:9,i:14,tri:'4T27'},{l:'dez/27',t:9,i:15,tri:'4T27'},
-];
-
-// D[0] = trajetória Focus véspera 280ª (embutida no proj_cop=3,50)
-// s0=14,50 já reflete jan/26, mar/26 e abr/26 → índices 0, 1 e 2 zerados
-// jun=-25,ago=-50,set=-25,nov=-25,dez=-25 → fim-26=13,00%
-// jan/27=-25,mar=-25,mai=-50,jun=-25,ago=-25,set=-25,nov=-25,dez=0 → fim-27=11,00%
-// D[1] = começa igual a D[0]; usuário edita para testar
-// Invariante: D[0]=D[1] e demais iguais → proj = proj_cop = 3,50%
+const REUN       = COPOM_CONFIG.reun;
 let D = [
-  [0,0,0,-25,-50,-25,-25,-25,-25,-25,-50,-25,-25,-25,-25,0],  // D[0] Base Copom (280ª)
-  [0,0,0,-25,-50,-25,-25,-25,-25,-25,-50,-25,-25,-25,-25,0],  // D[1] Cenário Atual
+  [...COPOM_CONFIG.d0],  // D[0] Base Copom
+  [...COPOM_CONFIG.d0],  // D[1] Cenário Atual (começa igual)
 ];
 
 // ═══════════════════════════════════════════════════
@@ -554,19 +591,15 @@ let D = [
 const gn = id => { const el=document.getElementById(id); return el?parseFloat(el.value)||0:0; };
 
 function getHz(){
+  const def = COPOM_CONFIG.proxReunOpts[0];
   const sel = document.getElementById('prox_reuniao');
-  if(!sel || sel.length === 0) return {hprox:7, hcop:7, lprox:'4T2027', lcop:'4T2027'};
-  
+  if(!sel || sel.length === 0) return {hprox:def.hprox, hcop:def.hcop, lprox:def.lprox, lcop:def.lcop};
   const o = sel.options[sel.selectedIndex];
-  if(!o) return {hprox:7, hcop:7, lprox:'4T2027', lcop:'4T2027'};
-  
-  const hprox = parseInt(o.dataset.hprox) || 7;
-  const hcop = parseInt(o.dataset.hcop) || 6;
-  const lprox = o.dataset.lprox || '4T2027';
-  const lcop = o.dataset.lcop || '3T2027';
-  
-  console.log('getHz:', {hprox, hcop, lprox, lcop}); // Debug
-  
+  if(!o) return {hprox:def.hprox, hcop:def.hcop, lprox:def.lprox, lcop:def.lcop};
+  const hprox = parseInt(o.dataset.hprox) || def.hprox;
+  const hcop  = parseInt(o.dataset.hcop)  || def.hcop;
+  const lprox = o.dataset.lprox || def.lprox;
+  const lcop  = o.dataset.lcop  || def.lcop;
   return {hprox, hcop, lprox, lcop};
 }
 
@@ -629,9 +662,9 @@ function calcSelicNec(s0, st, hprox){
 // RENDER TABELA SELIC
 // ═══════════════════════════════════════════════════
 function buildSelicTable(s0, hcop, hprox, tblId='selic_tbl'){
-  // Acumula jan/26, mar/26 e abr/26 (passadas, índices 0, 1 e 2)
+  // Acumula reuniões passadas já embutidas em s0
   let l0=s0, l1=s0;
-  for(let pi=0;pi<3;pi++){ l0=Math.max(4,Math.min(25,l0+D[0][pi]/100)); l1=Math.max(4,Math.min(25,l1+D[1][pi]/100)); }
+  for(let pi=0;pi<COPOM_CONFIG.pastMeetings;pi++){ l0=Math.max(4,Math.min(25,l0+D[0][pi]/100)); l1=Math.max(4,Math.min(25,l1+D[1][pi]/100)); }
 
   // hcop e hprox são T+N (ex: 6=T+6=3T27). Em REUN, r.t = T+N+1
   // mas agora REUN usa r.t diferente — vamos comparar via índice BCB_BASE
@@ -642,7 +675,7 @@ function buildSelicTable(s0, hcop, hprox, tblId='selic_tbl'){
 
   let h=`<thead><tr>
     <th>Reunião</th><th>Tri</th>
-    <th title="Trajetória da 279ª reunião (base do proj_cop)">Base Copom<br><small>(bps)</small></th>
+    <th title="Trajetória da ${COPOM_CONFIG.proxReunOpts[0].num}ª reunião (base do proj_cop)">Base Copom<br><small>(bps)</small></th>
     <th title="Edite para testar">Atual<br><small>(bps)</small></th>
     <th>Selic Base<br><small>(%a.a.)</small></th>
     <th>Selic Atual<br><small>(%a.a.)</small></th>
@@ -673,6 +706,10 @@ function buildSelicTable(s0, hcop, hprox, tblId='selic_tbl'){
   document.getElementById(tblId).innerHTML=h+'</tbody>';
   document.getElementById('selic_lbl').textContent=
     buildTri(s0,D[1])[0]?.toFixed(2).replace('.',',')+' %';
+  const refEl=document.getElementById('selic_ref_reun');
+  if(refEl) refEl.textContent=`${COPOM_CONFIG.ultimaReuniao.numero}ª`;
+  const fnEl=document.getElementById('selic_footnote');
+  if(fnEl) fnEl.textContent=`${COPOM_CONFIG.pastMeetingLabels.join(', ')} já realizados (não aparecem). Base Copom = trajetória embutida no proj_cop (${COPOM_CONFIG.proj_cop.toFixed(2).replace('.',',')}%). Atual = edite para testar.`;
 }
 
 function updateD(col,idx,val){ D[col][idx]=val; recalc(); }
@@ -725,11 +762,11 @@ function recalc(){
     const d = ri.proj-meta;
 
   // Pills
-  document.getElementById('pill_cop').textContent=`278ª Copom · HR: ${lcop} = ${st.proj_cop.toFixed(2).replace('.',',')}%`;
+  document.getElementById('pill_cop').textContent=`${COPOM_CONFIG.ultimaReuniao.numero}ª Copom · HR: ${lcop} = ${st.proj_cop.toFixed(2).replace('.',',')}%`;
   document.getElementById('pill_prox').textContent=`Próxima · HR: ${lprox} = ${ri.proj.toFixed(2).replace('.',',')}%`;
 
   // Resultados esquerda
-  document.getElementById('rc_mtg').textContent=`278ª · T+${hcop} (${lcop})`;
+  document.getElementById('rc_mtg').textContent=`${COPOM_CONFIG.ultimaReuniao.numero}ª · T+${hcop} (${lcop})`;
   document.getElementById('rc_val').textContent=st.proj_cop.toFixed(2).replace('.',',')+' %';
   document.getElementById('rp_mtg').textContent=`Próxima · T+${hprox} (${lprox})`;
   document.getElementById('rp_val').textContent=ri.proj.toFixed(2).replace('.',',')+' %';
@@ -874,12 +911,13 @@ function onReunChange(){
 // MODELO SUAVIZADO — igual ao completo mas Brent com FRI × 0.5
 // ═══════════════════════════════════════════════════
 function getSvHz(){
+  const def=COPOM_CONFIG.proxReunOpts[0];
   const sel=document.getElementById('sv_prox_reuniao');
-  if(!sel || sel.length === 0) return {hprox:7,hcop:7,lprox:'4T2027',lcop:'4T2027'};
+  if(!sel || sel.length === 0) return {hprox:def.hprox,hcop:def.hcop,lprox:def.lprox,lcop:def.lcop};
   const o=sel.options[sel.selectedIndex];
-  if(!o) return {hprox:7,hcop:7,lprox:'4T2027',lcop:'4T2027'};
-  return{hprox:parseInt(o.dataset.hprox)||7,hcop:parseInt(o.dataset.hcop)||6,
-         lprox:o.dataset.lprox||'4T2027',lcop:o.dataset.lcop||'4T2027'};
+  if(!o) return {hprox:def.hprox,hcop:def.hcop,lprox:def.lprox,lcop:def.lcop};
+  return{hprox:parseInt(o.dataset.hprox)||def.hprox,hcop:parseInt(o.dataset.hcop)||def.hcop,
+         lprox:o.dataset.lprox||def.lprox,lcop:o.dataset.lcop||def.lcop};
 }
 
 function recalcSuav(){
@@ -941,7 +979,7 @@ function recalcSuav(){
 
   // KPIs — right panel only (left panel boxes removed)
   // Right panel KPIs
-  ['sv_rc_mtg2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`278ª · T+${hcop} (${lcop})`;});
+  ['sv_rc_mtg2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`${COPOM_CONFIG.ultimaReuniao.numero}ª · T+${hcop} (${lcop})`;});
   ['sv_rc_val2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=st.proj_cop.toFixed(2).replace('.',',')+' %';});
   ['sv_rp_mtg2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`Próxima · T+${hprox} (${lprox})`;});
   ['sv_rp_val2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ri.proj.toFixed(2).replace('.',',')+' %';});
@@ -1026,9 +1064,8 @@ function goTab(tab,btn){
 // CENÁRIOS SELIC
 // ═══════════════════════════════════════════════════
 // 3 arrays de deltas editáveis pelo usuário (um por cenário)
-// Cenário 1: valores customizados (abr/26 a dez/27)
-// índices:    0  1   2    3    4    5    6    7    8    9   10   11  12  13  14  15
-const SC1_CUSTOM = [0,0,0,-26,-24,-19,-14,-14,-14,-14,-11,-8,-5,-2,1,4];
+// Cenário 1: valores customizados (bps por reunião) — derivado do COPOM_CONFIG
+const SC1_CUSTOM = COPOM_CONFIG.sc1Custom;
 let SC = [
   [...D[1]],       // Atual — igual ao Modelo Completo
   [...SC1_CUSTOM], // Cenário 1 — valores customizados
@@ -1036,7 +1073,7 @@ let SC = [
 ];
 
 function initScenarios(){
-  SC = [[...D[1]], [...SC1_CUSTOM], [...D[0]]];
+  SC = [[...D[1]], [...COPOM_CONFIG.sc1Custom], [...D[0]]];
   renderScenarios();
 }
 
@@ -1063,8 +1100,8 @@ function renderScenarios(){
   // Build Selic levels for each scenario
   function getLevels(deltas){
     let l = s0, lvls = [];
-    // past meetings (0,1,2) = jan/26, mar/26, abr/26
-    for(let i=0;i<3;i++) l = Math.max(4,Math.min(25,l+deltas[i]/100));
+    // reuniões passadas já embutidas em s0
+    for(let i=0;i<COPOM_CONFIG.pastMeetings;i++) l = Math.max(4,Math.min(25,l+deltas[i]/100));
     REUN.forEach(r=>{
       l = Math.max(4,Math.min(25,l+deltas[r.i]/100));
       lvls.push(l);
@@ -1083,7 +1120,7 @@ function renderScenarios(){
   const lbl = document.getElementById('sc_proj_cop_lbl');
   const sub = document.getElementById('sc_proj_cop_sub');
   if(lbl) lbl.textContent = proj_cop_oficial.toFixed(2).replace('.',',')+'%';
-  if(sub) sub.textContent = `278ª reunião · HR: ${lcop} · ${(proj_cop_oficial-3.0)>=0?'+':''}${(proj_cop_oficial-3.0).toFixed(2).replace('.',',')} p.p. vs meta`;
+  if(sub) sub.textContent = `${COPOM_CONFIG.ultimaReuniao.numero}ª reunião · HR: ${lcop} · ${(proj_cop_oficial-3.0)>=0?'+':''}${(proj_cop_oficial-3.0).toFixed(2).replace('.',',')} p.p. vs meta`;
 
   // Render input rows
   let rows = '';
@@ -1147,13 +1184,13 @@ function resetScenarios(){
 // DEFAULTS + INIT
 // ═══════════════════════════════════════════════════
 function resetAll(){
-  const defs={s0:14.50,cx0:5.00,cx1:5.00,br0:75,br1:75,cm0:83,cm1:83,
-    f26_0:4.86,f26_1:4.86,f27_0:4.00,f27_1:4.00,proj_cop:3.50,flat_sel:14.50};
+  const C=COPOM_CONFIG;
+  const defs={s0:C.s0,cx0:C.cx0,cx1:C.cx0,br0:75,br1:75,cm0:83,cm1:83,
+    f26_0:C.f26_0,f26_1:C.f26_0,f27_0:C.f27_0,f27_1:C.f27_0,proj_cop:C.proj_cop,flat_sel:C.s0};
   Object.entries(defs).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v;});
   document.getElementById('prox_reuniao').selectedIndex=0;
-  // D[0] = D[1] = Base Copom (280ª): fim-26=13,00% fim-27=11,00%
-  D[0]=[0,0,0,-25,-50,-25,-25,-25,-25,-25,-50,-25,-25,-25,-25,0];
-  D[1]=[0,0,0,-25,-50,-25,-25,-25,-25,-25,-50,-25,-25,-25,-25,0];
+  D[0]=[...C.d0];
+  D[1]=[...C.d0];
   recalc();
 }
 
@@ -1237,8 +1274,8 @@ async function updateFromBCB(btn){
           console.log('Selic item keys:', Object.keys(sample));
           console.log('Sample Selic:', JSON.stringify(sample).substring(0, 400));
           
-          // Data de corte: 16/04/2026 (último Copom — 279ª reunião)
-          const dtCopomStr = '2026-04-16';
+          // Data de corte: data do último Copom (reuniões com data > corte são ignoradas como base)
+          const dtCopomStr = COPOM_CONFIG.ultimaReuniao.data;
           
           // Agrupa por Reuniao e pega:
           // - Mais recente (para Cenário)
@@ -1425,11 +1462,11 @@ async function updateFromBCB(btn){
     // Atualizar D[1] com trajetória completa de reuniões futuras
     if(selicLevels.length > 0) {
       // Usa s0 (Selic atual pós-último Copom) como referência
-      const s0Val = parseFloat(document.getElementById('s0')?.value) || 14.50;
+      const s0Val = parseFloat(document.getElementById('s0')?.value) || COPOM_CONFIG.s0;
       let prevLevel = s0Val;
       const newD1 = [...D[1]];
       selicLevels.forEach(e => {
-        if(e.dIdx >= 3) { // jan/26(0), mar/26(1), abr/26(2) já realizados
+        if(e.dIdx >= COPOM_CONFIG.pastMeetings) { // reuniões passadas já embutidas em s0
           newD1[e.dIdx] = Math.round((e.level - prevLevel) * 100); // bps
           prevLevel = e.level;
         }
@@ -1438,6 +1475,7 @@ async function updateFromBCB(btn){
       SC[0] = [...D[1]]; // Atualiza coluna "Atual" nos Cenários Selic
       console.log('✅ D[1] atualizado:', D[1]);
       console.log('✅ SC[0] (Atual) atualizado');
+      updated = true;
     }
     if(focus26 && !isNaN(focus26)){
       document.getElementById('f26_1').value = Number(focus26).toFixed(2);
@@ -1497,19 +1535,32 @@ async function updateFromBCB(btn){
   }
 }
 
+function initDropdowns(){
+  const opts = COPOM_CONFIG.proxReunOpts;
+  const html = opts.map((o,i)=>
+    `<option value="${o.val}" data-hprox="${o.hprox}" data-hcop="${o.hcop}" data-lprox="${o.lprox}" data-lcop="${o.lcop}"${i===0?' selected':''}>${o.label} (${o.num}ª) → HR: ${o.lprox}</option>`
+  ).join('');
+  ['prox_reuniao','sv_prox_reuniao'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.innerHTML=html;
+  });
+}
+
 window.addEventListener('load',()=>{
+  initDropdowns();
   // Garante valores default corretos (evita browser restaurar valores antigos de formulário)
+  const C=COPOM_CONFIG;
   const DEFAULTS = {
-    s0:14.50, sv_s0:14.50,
-    cx0:5.00, cx1:5.00, sv_cx0:5.00, sv_cx1:5.00,
-    f26_0:4.86, f26_1:4.86, sv_f26_0:4.86, sv_f26_1:4.86,
-    f27_0:4.00, f27_1:4.00, sv_f27_0:4.00, sv_f27_1:4.00,
-    proj_cop:3.50, sv_proj_cop:3.50,
+    s0:C.s0, sv_s0:C.s0,
+    cx0:C.cx0, cx1:C.cx0, sv_cx0:C.cx0, sv_cx1:C.cx0,
+    f26_0:C.f26_0, f26_1:C.f26_0, sv_f26_0:C.f26_0, sv_f26_1:C.f26_0,
+    f27_0:C.f27_0, f27_1:C.f27_0, sv_f27_0:C.f27_0, sv_f27_1:C.f27_0,
+    proj_cop:C.proj_cop, sv_proj_cop:C.proj_cop,
+    flat_sel:C.s0, sv_flat_sel:C.s0,
   };
   Object.entries(DEFAULTS).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v; });
   onReunChange(); // pode sobrescrever proj_cop com BCB_BASE — forçar novamente abaixo
-  document.getElementById('proj_cop').value = 3.50;
-  document.getElementById('sv_proj_cop').value = 3.50;
+  document.getElementById('proj_cop').value = C.proj_cop;
+  document.getElementById('sv_proj_cop').value = C.proj_cop;
   recalc(); recalcSuav();
 });
 </script>

@@ -1505,7 +1505,18 @@ async function updateFromBCB(btn){
   }
 }
 
-window.addEventListener('load',()=>{ onReunChange(); });
+window.addEventListener('load',()=>{
+  // Garante valores default corretos (evita browser restaurar valores antigos de formulário)
+  const DEFAULTS = {
+    s0:14.50, sv_s0:14.50,
+    cx0:5.00, cx1:5.00, sv_cx0:5.00, sv_cx1:5.00,
+    f26_0:4.86, f26_1:4.86, sv_f26_0:4.86, sv_f26_1:4.86,
+    f27_0:4.00, f27_1:4.00, sv_f27_0:4.00, sv_f27_1:4.00,
+    proj_cop:3.50, sv_proj_cop:3.50,
+  };
+  Object.entries(DEFAULTS).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v; });
+  onReunChange();
+});
 </script>
 </body>
 </html>

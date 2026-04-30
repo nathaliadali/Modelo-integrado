@@ -521,7 +521,7 @@ const FRI = {
   comm:   [0, 0.25, 0.50, 0.70, 0.90, 0.65, 0.50, 0.40, 0.35, 0.30, 0.25],
 };
 // Tabela 2.2.1 RPM mar/26 · 2T26 3T26 4T26 1T27 2T27 3T27 4T27 1T28
-const BCB_BASE = [3.6, 3.7, 3.8, 3.9, 3.4, 3.3, 3.3, 3.2];
+const BCB_BASE = [3.6, 3.7, 3.8, 3.9, 3.4, 3.5, 3.5, 3.2]; // 3T27 e 4T27 atualizados 279ª reunião
 const TRI_RESULT = ['2T26','3T26','4T26','1T27','2T27','3T27','4T27','1T28'];
 
 // Reuniões futuras: r.t = índice de trimestre (1=1T26,...,8=4T27)
@@ -1515,7 +1515,10 @@ window.addEventListener('load',()=>{
     proj_cop:3.50, sv_proj_cop:3.50,
   };
   Object.entries(DEFAULTS).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v; });
-  onReunChange();
+  onReunChange(); // pode sobrescrever proj_cop com BCB_BASE — forçar novamente abaixo
+  document.getElementById('proj_cop').value = 3.50;
+  document.getElementById('sv_proj_cop').value = 3.50;
+  recalc(); recalcSuav();
 });
 </script>
 </body>

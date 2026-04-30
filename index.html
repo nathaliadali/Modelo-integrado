@@ -1019,7 +1019,7 @@ function goTab(tab,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active')});
   btn.classList.add('active');
   if(tab==='stress') recalcSuav();
-  if(tab==='selic')  initScenarios();
+  if(tab==='selic')  renderScenarios();
 }
 
 // ═══════════════════════════════════════════════════

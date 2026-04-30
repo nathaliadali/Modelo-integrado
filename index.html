@@ -148,7 +148,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
   <div><div class="title">Modelo Agregado de Pequeno Porte – Banco Central</div>
   <div class="sub">FRIs Modelo Agregado (RI Jun/2024) · Focus 2026 e 2027 separados · Horizonte rolante</div></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <span class="pill pill-cop" id="pill_cop">277ª Copom · HR: 3T2027 = 3,30%</span>
+    <span class="pill pill-cop" id="pill_cop">278ª Copom · HR: 4T2027 = 3,50%</span>
     <span class="pill pill-prox" id="pill_prox">Próxima · HR: 4T2027 = —</span>
     <span class="pill pill-meta">Meta: 3,0%</span>
   </div>
@@ -238,11 +238,11 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
         <input type="number" id="proj_cop" value="3.50" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Próxima reunião<br><small style="font-weight:400;color:var(--muted)">define horizonte automaticamente</small></label>
         <select id="prox_reuniao" onchange="onReunChange()">
-          <option value="jun26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027" selected>jun/26 (280ª) → HR: 4T2027</option>
-          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (281ª) → HR: 1T2028</option>
-          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (282ª) → HR: 1T2028</option>
-          <option value="nov26" data-hprox="8" data-hcop="8" data-lprox="2T2028" data-lcop="1T2028">nov/26 (283ª) → HR: 2T2028</option>
-          <option value="dez26" data-hprox="8" data-hcop="8" data-lprox="2T2028" data-lcop="1T2028">dez/26 (284ª) → HR: 2T2028</option>
+          <option value="jun26" data-hprox="7" data-hcop="7" data-lprox="4T2027" data-lcop="4T2027" selected>jun/26 (279ª) → HR: 4T2027</option>
+          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (280ª) → HR: 1T2028</option>
+          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (281ª) → HR: 1T2028</option>
+          <option value="nov26" data-hprox="8" data-hcop="8" data-lprox="2T2028" data-lcop="1T2028">nov/26 (282ª) → HR: 2T2028</option>
+          <option value="dez26" data-hprox="8" data-hcop="8" data-lprox="2T2028" data-lcop="1T2028">dez/26 (283ª) → HR: 2T2028</option>
         </select>
       </div>
     </div>
@@ -258,7 +258,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
   <div class="card">
     <div class="card-hdr">
       <h3>💰 Trajetória Selic – bps por reunião</h3>
-      <span>Selic hoje: <b id="selic_lbl">14,75%</b> (pós-mar/26) · Base Copom = referência da 277ª · Atual = seu teste · ★ HR Copom · ★★ HR próximo</span>
+      <span>Selic hoje: <b id="selic_lbl">14,75%</b> (pós-abr/26) · Base Copom = referência da 278ª · Atual = seu teste · ★ HR Copom · ★★ HR próximo</span>
     </div>
     <div class="selic-wrap"><table class="st" id="selic_tbl"></table></div>
     <div style="padding:5px 12px 8px;font-size:10px;color:var(--muted)">Jan/26, mar/26 e abr/26 já realizados (não aparecem). Base Copom = trajetória embutida no proj_cop (3,50%). Atual = edite para testar.</div>
@@ -269,8 +269,8 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px">
       <div class="rbox rbox-cop" style="margin:0">
         <div class="rl">Último Copom</div>
-        <div class="rm" id="rc_mtg">277ª · T+6 (3T2027)</div>
-        <div class="rv" id="rc_val">3,30%</div>
+        <div class="rm" id="rc_mtg">278ª · T+7 (4T2027)</div>
+        <div class="rv" id="rc_val">3,50%</div>
         <div class="rs">BCB oficial · meta 3,0%</div>
       </div>
       <div class="rbox" id="rp_block" style="margin:0;background:linear-gradient(135deg,var(--bcb),var(--bcb2))">
@@ -395,9 +395,9 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
         <input type="number" id="sv_proj_cop" value="3.50" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
       <div class="inp-cell"><label>Próxima reunião</label>
         <select id="sv_prox_reuniao" onchange="recalcSuav()">
-          <option value="jun26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027" selected>jun/26 (280ª) → HR: 4T2027</option>
-          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (281ª) → HR: 1T2028</option>
-          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (282ª) → HR: 1T2028</option>
+          <option value="jun26" data-hprox="7" data-hcop="7" data-lprox="4T2027" data-lcop="4T2027" selected>jun/26 (279ª) → HR: 4T2027</option>
+          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (280ª) → HR: 1T2028</option>
+          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (281ª) → HR: 1T2028</option>
         </select>
       </div>
     </div>
@@ -421,8 +421,8 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px">
       <div class="rbox rbox-cop" style="margin:0">
         <div class="rl">Último Copom</div>
-        <div class="rm" id="sv_rc_mtg2">277ª · T+6 (3T2027)</div>
-        <div class="rv" id="sv_rc_val2">3,30%</div>
+        <div class="rm" id="sv_rc_mtg2">278ª · T+7 (4T2027)</div>
+        <div class="rv" id="sv_rc_val2">3,50%</div>
         <div class="rs">BCB oficial · meta 3,0%</div>
       </div>
       <div class="rbox" id="sv_rp_block2" style="margin:0;background:linear-gradient(135deg,var(--bcb),var(--bcb2))">
@@ -555,10 +555,10 @@ const gn = id => { const el=document.getElementById(id); return el?parseFloat(el
 
 function getHz(){
   const sel = document.getElementById('prox_reuniao');
-  if(!sel || sel.length === 0) return {hprox:7, hcop:6, lprox:'4T2027', lcop:'3T2027'};
+  if(!sel || sel.length === 0) return {hprox:7, hcop:7, lprox:'4T2027', lcop:'4T2027'};
   
   const o = sel.options[sel.selectedIndex];
-  if(!o) return {hprox:7, hcop:6, lprox:'4T2027', lcop:'3T2027'};
+  if(!o) return {hprox:7, hcop:7, lprox:'4T2027', lcop:'4T2027'};
   
   const hprox = parseInt(o.dataset.hprox) || 7;
   const hcop = parseInt(o.dataset.hcop) || 6;
@@ -725,11 +725,11 @@ function recalc(){
     const d = ri.proj-meta;
 
   // Pills
-  document.getElementById('pill_cop').textContent=`277ª Copom · HR: ${lcop} = ${st.proj_cop.toFixed(2).replace('.',',')}%`;
+  document.getElementById('pill_cop').textContent=`278ª Copom · HR: ${lcop} = ${st.proj_cop.toFixed(2).replace('.',',')}%`;
   document.getElementById('pill_prox').textContent=`Próxima · HR: ${lprox} = ${ri.proj.toFixed(2).replace('.',',')}%`;
 
   // Resultados esquerda
-  document.getElementById('rc_mtg').textContent=`277ª · T+${hcop} (${lcop})`;
+  document.getElementById('rc_mtg').textContent=`278ª · T+${hcop} (${lcop})`;
   document.getElementById('rc_val').textContent=st.proj_cop.toFixed(2).replace('.',',')+' %';
   document.getElementById('rp_mtg').textContent=`Próxima · T+${hprox} (${lprox})`;
   document.getElementById('rp_val').textContent=ri.proj.toFixed(2).replace('.',',')+' %';
@@ -875,11 +875,11 @@ function onReunChange(){
 // ═══════════════════════════════════════════════════
 function getSvHz(){
   const sel=document.getElementById('sv_prox_reuniao');
-  if(!sel || sel.length === 0) return {hprox:7,hcop:6,lprox:'4T2027',lcop:'3T2027'};
+  if(!sel || sel.length === 0) return {hprox:7,hcop:7,lprox:'4T2027',lcop:'4T2027'};
   const o=sel.options[sel.selectedIndex];
-  if(!o) return {hprox:7,hcop:6,lprox:'4T2027',lcop:'3T2027'};
+  if(!o) return {hprox:7,hcop:7,lprox:'4T2027',lcop:'4T2027'};
   return{hprox:parseInt(o.dataset.hprox)||7,hcop:parseInt(o.dataset.hcop)||6,
-         lprox:o.dataset.lprox||'4T2027',lcop:o.dataset.lcop||'3T2027'};
+         lprox:o.dataset.lprox||'4T2027',lcop:o.dataset.lcop||'4T2027'};
 }
 
 function recalcSuav(){
@@ -941,7 +941,7 @@ function recalcSuav(){
 
   // KPIs — right panel only (left panel boxes removed)
   // Right panel KPIs
-  ['sv_rc_mtg2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`277ª · T+${hcop} (${lcop})`;});
+  ['sv_rc_mtg2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`278ª · T+${hcop} (${lcop})`;});
   ['sv_rc_val2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=st.proj_cop.toFixed(2).replace('.',',')+' %';});
   ['sv_rp_mtg2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`Próxima · T+${hprox} (${lprox})`;});
   ['sv_rp_val2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ri.proj.toFixed(2).replace('.',',')+' %';});
@@ -1083,7 +1083,7 @@ function renderScenarios(){
   const lbl = document.getElementById('sc_proj_cop_lbl');
   const sub = document.getElementById('sc_proj_cop_sub');
   if(lbl) lbl.textContent = proj_cop_oficial.toFixed(2).replace('.',',')+'%';
-  if(sub) sub.textContent = `277ª reunião · HR: ${lcop} · ${(proj_cop_oficial-3.0)>=0?'+':''}${(proj_cop_oficial-3.0).toFixed(2).replace('.',',')} p.p. vs meta`;
+  if(sub) sub.textContent = `278ª reunião · HR: ${lcop} · ${(proj_cop_oficial-3.0)>=0?'+':''}${(proj_cop_oficial-3.0).toFixed(2).replace('.',',')} p.p. vs meta`;
 
   // Render input rows
   let rows = '';
@@ -1421,15 +1421,7 @@ async function updateFromBCB(btn){
     } else {
       console.warn('⚠️ Câmbio NÃO atualizado');
     }
-    if(selicCenario !== null && !isNaN(selicCenario)){
-      document.getElementById('s0').value = Number(selicCenario).toFixed(2);
-      const sv_s0 = document.getElementById('sv_s0');
-      if(sv_s0) sv_s0.value = Number(selicCenario).toFixed(2);
-      console.log('✅ Selic Cenário atualizada:', selicCenario);
-      updated = true;
-    } else {
-      console.warn('⚠️ Selic NÃO atualizada');
-    }
+    // s0 (Selic atual) NÃO é atualizado pela API — é o valor real pós-último Copom (14,50%), não expectativa do Focus
     // Atualizar D[1] com trajetória completa de reuniões futuras
     if(selicLevels.length > 0) {
       // Usa s0 (Selic atual pós-último Copom) como referência

@@ -215,7 +215,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <div class="inp-cell"><label>Focus 2026<br>último Copom (%)</label>
         <input type="number" id="f26_0" value="4.86" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Focus 2026<br>atual (%)</label>
-        <input type="number" id="f26_1" value="4.31" step="0.05" min="0" max="15" class="f26c" oninput="recalc()">
+        <input type="number" id="f26_1" value="4.86" step="0.05" min="0" max="15" class="f26c" oninput="recalc()">
         <div id="f26_date" style="font-size:9px;color:var(--muted);margin-top:3px;min-height:12px"></div></div>
     </div>
   </div>
@@ -226,7 +226,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <div class="inp-cell"><label>Focus 2027<br>último Copom (%)</label>
         <input type="number" id="f27_0" value="4.00" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Focus 2027<br>atual (%)</label>
-        <input type="number" id="f27_1" value="3.84" step="0.05" min="0" max="15" class="f27c" oninput="recalc()">
+        <input type="number" id="f27_1" value="4.00" step="0.05" min="0" max="15" class="f27c" oninput="recalc()">
         <div id="f27_date" style="font-size:9px;color:var(--muted);margin-top:3px;min-height:12px"></div></div>
     </div>
   </div>
@@ -374,7 +374,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <div class="inp-cell"><label>Focus 2026<br>último Copom (%)</label>
         <input type="number" id="sv_f26_0" value="4.86" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
       <div class="inp-cell"><label>Focus 2026<br>atual (%)</label>
-        <input type="number" id="sv_f26_1" value="4.31" step="0.05" min="0" max="15" class="f26c" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_f26_1" value="4.86" step="0.05" min="0" max="15" class="f26c" oninput="recalcSuav()"></div>
     </div>
   </div>
 
@@ -384,7 +384,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <div class="inp-cell"><label>Focus 2027<br>último Copom (%)</label>
         <input type="number" id="sv_f27_0" value="4.00" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
       <div class="inp-cell"><label>Focus 2027<br>atual (%)</label>
-        <input type="number" id="sv_f27_1" value="3.84" step="0.05" min="0" max="15" class="f27c" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_f27_1" value="4.00" step="0.05" min="0" max="15" class="f27c" oninput="recalcSuav()"></div>
     </div>
   </div>
 
@@ -709,9 +709,9 @@ function recalc(){
       cx0:gn('cx0')||5.40, cx1:gn('cx1')||5.25,
       br0:gn('br0')||75,   br1:gn('br1')||75,
       cm0:gn('cm0')||83,   cm1:gn('cm1')||83,
-      f26_0:gn('f26_0')||4.10, f26_1:gn('f26_1')||4.31,
-      f27_0:gn('f27_0')||3.80, f27_1:gn('f27_1')||3.84,
-      proj_cop:gn('proj_cop')||3.30,
+      f26_0:gn('f26_0')||4.86, f26_1:gn('f26_1')||4.86,
+      f27_0:gn('f27_0')||4.00, f27_1:gn('f27_1')||4.00,
+      proj_cop:gn('proj_cop')||3.50,
     };
     const {hprox,hcop,lprox,lcop}=getHz();
     
@@ -805,10 +805,10 @@ function calcFlat(){
   const st={cx0:gn('cx0')||5.40,cx1:gn('cx1')||5.25,
     br0:gn('br0')||75,br1:gn('br1')||75,
     cm0:gn('cm0')||83,cm1:gn('cm1')||83,
-    f26_0:gn('f26_0')||4.10,f26_1:gn('f26_1')||4.31,
-    f27_0:gn('f27_0')||3.80,f27_1:gn('f27_1')||3.84,
-    proj_cop:gn('proj_cop')||3.30};
-  const sf=gn('flat_sel')||14.75;
+    f26_0:gn('f26_0')||4.86,f26_1:gn('f26_1')||4.86,
+    f27_0:gn('f27_0')||4.00,f27_1:gn('f27_1')||4.00,
+    proj_cop:gn('proj_cop')||3.50};
+  const sf=gn('flat_sel')||14.50;
   const {hprox,lprox}=getHz();
   const bps=(sf-s0)*100/16;
   const r=calcImpactos(s0,st,Array(16).fill(bps),hprox);
@@ -819,19 +819,19 @@ function calcFlat(){
 }
 
 function calcFlatSuav(){
-  const s0=parseFloat(document.getElementById('sv_s0')?.value)||14.75;
-  const st={cx0:parseFloat(document.getElementById('sv_cx0')?.value)||5.20,
-    cx1:parseFloat(document.getElementById('sv_cx1')?.value)||5.20,
+  const s0=parseFloat(document.getElementById('sv_s0')?.value)||14.50;
+  const st={cx0:parseFloat(document.getElementById('sv_cx0')?.value)||5.00,
+    cx1:parseFloat(document.getElementById('sv_cx1')?.value)||5.00,
     br0:parseFloat(document.getElementById('sv_br0')?.value)||75,
     br1:parseFloat(document.getElementById('sv_br1')?.value)||75,
     cm0:parseFloat(document.getElementById('sv_cm0')?.value)||83,
     cm1:parseFloat(document.getElementById('sv_cm1')?.value)||83,
-    f26_0:parseFloat(document.getElementById('sv_f26_0')?.value)||4.10,
-    f26_1:parseFloat(document.getElementById('sv_f26_1')?.value)||4.31,
-    f27_0:parseFloat(document.getElementById('sv_f27_0')?.value)||3.80,
-    f27_1:parseFloat(document.getElementById('sv_f27_1')?.value)||3.84,
-    proj_cop:parseFloat(document.getElementById('sv_proj_cop')?.value)||3.30};
-  const sf=parseFloat(document.getElementById('sv_flat_sel')?.value)||14.75;
+    f26_0:parseFloat(document.getElementById('sv_f26_0')?.value)||4.86,
+    f26_1:parseFloat(document.getElementById('sv_f26_1')?.value)||4.86,
+    f27_0:parseFloat(document.getElementById('sv_f27_0')?.value)||4.00,
+    f27_1:parseFloat(document.getElementById('sv_f27_1')?.value)||4.00,
+    proj_cop:parseFloat(document.getElementById('sv_proj_cop')?.value)||3.50};
+  const sf=parseFloat(document.getElementById('sv_flat_sel')?.value)||14.50;
   const sel=document.getElementById('sv_prox_reuniao');
   const o=sel?sel.options[sel.selectedIndex]:null;
   const hprox=o?parseInt(o.dataset.hprox)||7:7;
@@ -884,19 +884,19 @@ function getSvHz(){
 
 function recalcSuav(){
   try {
-    const s0=parseFloat(document.getElementById('sv_s0').value)||14.75;
+    const s0=parseFloat(document.getElementById('sv_s0').value)||14.50;
     const st={
-      cx0:parseFloat(document.getElementById('sv_cx0').value)||5.20,
-      cx1:parseFloat(document.getElementById('sv_cx1').value)||5.20,
+      cx0:parseFloat(document.getElementById('sv_cx0').value)||5.00,
+      cx1:parseFloat(document.getElementById('sv_cx1').value)||5.00,
       br0:parseFloat(document.getElementById('sv_br0').value)||75,
       br1:parseFloat(document.getElementById('sv_br1').value)||75,
       cm0:parseFloat(document.getElementById('sv_cm0').value)||83,
       cm1:parseFloat(document.getElementById('sv_cm1').value)||83,
-      f26_0:parseFloat(document.getElementById('sv_f26_0').value)||4.10,
-      f26_1:parseFloat(document.getElementById('sv_f26_1').value)||4.31,
-      f27_0:parseFloat(document.getElementById('sv_f27_0').value)||3.80,
-      f27_1:parseFloat(document.getElementById('sv_f27_1').value)||3.84,
-      proj_cop:parseFloat(document.getElementById('sv_proj_cop').value)||3.30,
+      f26_0:parseFloat(document.getElementById('sv_f26_0').value)||4.86,
+      f26_1:parseFloat(document.getElementById('sv_f26_1').value)||4.86,
+      f27_0:parseFloat(document.getElementById('sv_f27_0').value)||4.00,
+      f27_1:parseFloat(document.getElementById('sv_f27_1').value)||4.00,
+      proj_cop:parseFloat(document.getElementById('sv_proj_cop').value)||3.50,
     };
     const {hprox,hcop,lprox,lcop}=getSvHz();
     
@@ -1041,19 +1041,19 @@ function initScenarios(){
 }
 
 function renderScenarios(){
-  const s0 = parseFloat(document.getElementById('s0').value)||14.75;
+  const s0 = parseFloat(document.getElementById('s0').value)||14.50;
   const st = {
-    cx0:parseFloat(document.getElementById('cx0').value)||5.20,
-    cx1:parseFloat(document.getElementById('cx1').value)||5.20,
+    cx0:parseFloat(document.getElementById('cx0').value)||5.00,
+    cx1:parseFloat(document.getElementById('cx1').value)||5.00,
     br0:parseFloat(document.getElementById('br0').value)||75,
     br1:parseFloat(document.getElementById('br1').value)||75,
     cm0:parseFloat(document.getElementById('cm0').value)||83,
     cm1:parseFloat(document.getElementById('cm1').value)||83,
-    f26_0:parseFloat(document.getElementById('f26_0').value)||4.10,
-    f26_1:parseFloat(document.getElementById('f26_1').value)||4.10,
-    f27_0:parseFloat(document.getElementById('f27_0').value)||3.80,
-    f27_1:parseFloat(document.getElementById('f27_1').value)||3.80,
-    proj_cop:parseFloat(document.getElementById('proj_cop').value)||3.30,
+    f26_0:parseFloat(document.getElementById('f26_0').value)||4.86,
+    f26_1:parseFloat(document.getElementById('f26_1').value)||4.86,
+    f27_0:parseFloat(document.getElementById('f27_0').value)||4.00,
+    f27_1:parseFloat(document.getElementById('f27_1').value)||4.00,
+    proj_cop:parseFloat(document.getElementById('proj_cop').value)||3.50,
   };
   const {hprox,hcop,lprox,lcop} = getHz();
   const meta = 3.0;

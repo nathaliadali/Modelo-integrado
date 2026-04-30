@@ -171,7 +171,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="g1">
       <div class="inp-cell">
         <label>Selic atual (% a.a.)</label>
-        <input type="number" id="s0" value="14.75" step="0.25" min="3" max="25" oninput="recalc()">
+        <input type="number" id="s0" value="14.50" step="0.25" min="3" max="25" oninput="recalc()">
       </div>
     </div>
   </div>
@@ -180,9 +180,9 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title">🌍 Variáveis Externas</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 72px;gap:8px">
       <div class="inp-cell"><label>Câmbio<br>último Copom (R$)</label>
-        <input type="number" id="cx0" value="5.20" step="0.05" min="3" max="10" class="cop" oninput="syncVar('cx0','cx1','cx_var');recalc()"></div>
+        <input type="number" id="cx0" value="5.00" step="0.05" min="3" max="10" class="cop" oninput="syncVar('cx0','cx1','cx_var');recalc()"></div>
       <div class="inp-cell"><label>Câmbio<br>atual (R$)</label>
-        <input type="number" id="cx1" value="5.20" step="0.01" min="3" max="10" oninput="syncVar('cx0','cx1','cx_var');recalc()"></div>
+        <input type="number" id="cx1" value="5.00" step="0.01" min="3" max="10" oninput="syncVar('cx0','cx1','cx_var');recalc()"></div>
       <div class="inp-cell"><label>Var.<br>(%)</label>
         <input type="number" id="cx_var" value="0.0" step="0.1" class="var-inp" oninput="syncFromVar('cx0','cx1','cx_var',2);recalc()"></div>
     </div>
@@ -213,7 +213,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title" style="color:var(--f26)">📊 Focus IPCA – Ano t-1 (2026)</div>
     <div class="g2">
       <div class="inp-cell"><label>Focus 2026<br>último Copom (%)</label>
-        <input type="number" id="f26_0" value="4.10" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
+        <input type="number" id="f26_0" value="4.86" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Focus 2026<br>atual (%)</label>
         <input type="number" id="f26_1" value="4.31" step="0.05" min="0" max="15" class="f26c" oninput="recalc()">
         <div id="f26_date" style="font-size:9px;color:var(--muted);margin-top:3px;min-height:12px"></div></div>
@@ -224,7 +224,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title" style="color:var(--f27)">📅 Focus IPCA – Ano t (2027)</div>
     <div class="g2">
       <div class="inp-cell"><label>Focus 2027<br>último Copom (%)</label>
-        <input type="number" id="f27_0" value="3.80" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
+        <input type="number" id="f27_0" value="4.00" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Focus 2027<br>atual (%)</label>
         <input type="number" id="f27_1" value="3.84" step="0.05" min="0" max="15" class="f27c" oninput="recalc()">
         <div id="f27_date" style="font-size:9px;color:var(--muted);margin-top:3px;min-height:12px"></div></div>
@@ -235,15 +235,14 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title">⚙️ Referência BCB</div>
     <div class="g2">
       <div class="inp-cell"><label>Projeção BCB<br>último Copom (%)</label>
-        <input type="number" id="proj_cop" value="3.30" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
+        <input type="number" id="proj_cop" value="3.50" step="0.05" min="0" max="15" class="cop" oninput="recalc()"></div>
       <div class="inp-cell"><label>Próxima reunião<br><small style="font-weight:400;color:var(--muted)">define horizonte automaticamente</small></label>
         <select id="prox_reuniao" onchange="onReunChange()">
-          <option value="abr26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027" selected>abr/26 (278ª) → HR: 4T2027</option>
-          <option value="jun26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027">jun/26 (279ª) → HR: 4T2027</option>
-          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (280ª) → HR: 1T2028</option>
-          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (281ª) → HR: 1T2028</option>
-          <option value="nov26" data-hprox="8" data-hcop="8" data-lprox="2T2028" data-lcop="1T2028">nov/26 (282ª) → HR: 2T2028</option>
-          <option value="dez26" data-hprox="8" data-hcop="8" data-lprox="2T2028" data-lcop="1T2028">dez/26 (283ª) → HR: 2T2028</option>
+          <option value="jun26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027" selected>jun/26 (280ª) → HR: 4T2027</option>
+          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (281ª) → HR: 1T2028</option>
+          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (282ª) → HR: 1T2028</option>
+          <option value="nov26" data-hprox="8" data-hcop="8" data-lprox="2T2028" data-lcop="1T2028">nov/26 (283ª) → HR: 2T2028</option>
+          <option value="dez26" data-hprox="8" data-hcop="8" data-lprox="2T2028" data-lcop="1T2028">dez/26 (284ª) → HR: 2T2028</option>
         </select>
       </div>
     </div>
@@ -262,7 +261,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
       <span>Selic hoje: <b id="selic_lbl">14,75%</b> (pós-mar/26) · Base Copom = referência da 277ª · Atual = seu teste · ★ HR Copom · ★★ HR próximo</span>
     </div>
     <div class="selic-wrap"><table class="st" id="selic_tbl"></table></div>
-    <div style="padding:5px 12px 8px;font-size:10px;color:var(--muted)">Jan/26 e mar/26 já realizados (não aparecem). Base Copom = trajetória embutida no proj_cop (3,30%). Atual = edite para testar.</div>
+    <div style="padding:5px 12px 8px;font-size:10px;color:var(--muted)">Jan/26, mar/26 e abr/26 já realizados (não aparecem). Base Copom = trajetória embutida no proj_cop (3,50%). Atual = edite para testar.</div>
   </div>
 
   <div class="card">
@@ -331,7 +330,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="g1">
       <div class="inp-cell">
         <label>Selic atual (% a.a.)</label>
-        <input type="number" id="sv_s0" value="14.75" step="0.25" min="3" max="25" oninput="recalcSuav()">
+        <input type="number" id="sv_s0" value="14.50" step="0.25" min="3" max="25" oninput="recalcSuav()">
       </div>
     </div>
   </div>
@@ -340,9 +339,9 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title">🌍 Variáveis Externas</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 72px;gap:8px">
       <div class="inp-cell"><label>Câmbio<br>último Copom (R$)</label>
-        <input type="number" id="sv_cx0" value="5.20" step="0.05" min="3" max="10" class="cop" oninput="syncVar('sv_cx0','sv_cx1','sv_cx_var');recalcSuav()"></div>
+        <input type="number" id="sv_cx0" value="5.00" step="0.05" min="3" max="10" class="cop" oninput="syncVar('sv_cx0','sv_cx1','sv_cx_var');recalcSuav()"></div>
       <div class="inp-cell"><label>Câmbio<br>atual (R$)</label>
-        <input type="number" id="sv_cx1" value="5.20" step="0.01" min="3" max="10" oninput="syncVar('sv_cx0','sv_cx1','sv_cx_var');recalcSuav()"></div>
+        <input type="number" id="sv_cx1" value="5.00" step="0.01" min="3" max="10" oninput="syncVar('sv_cx0','sv_cx1','sv_cx_var');recalcSuav()"></div>
       <div class="inp-cell"><label>Var.<br>(%)</label>
         <input type="number" id="sv_cx_var" value="0.0" step="0.1" class="var-inp" oninput="syncFromVar('sv_cx0','sv_cx1','sv_cx_var',2);recalcSuav()"></div>
     </div>
@@ -373,7 +372,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title" style="color:var(--f26)">📊 Focus IPCA – Ano t-1 (2026)</div>
     <div class="g2">
       <div class="inp-cell"><label>Focus 2026<br>último Copom (%)</label>
-        <input type="number" id="sv_f26_0" value="4.10" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_f26_0" value="4.86" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
       <div class="inp-cell"><label>Focus 2026<br>atual (%)</label>
         <input type="number" id="sv_f26_1" value="4.31" step="0.05" min="0" max="15" class="f26c" oninput="recalcSuav()"></div>
     </div>
@@ -383,7 +382,7 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title" style="color:var(--f27)">📅 Focus IPCA – Ano t (2027)</div>
     <div class="g2">
       <div class="inp-cell"><label>Focus 2027<br>último Copom (%)</label>
-        <input type="number" id="sv_f27_0" value="3.80" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_f27_0" value="4.00" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
       <div class="inp-cell"><label>Focus 2027<br>atual (%)</label>
         <input type="number" id="sv_f27_1" value="3.84" step="0.05" min="0" max="15" class="f27c" oninput="recalcSuav()"></div>
     </div>
@@ -393,13 +392,12 @@ table.stress-tbl tr.s-prox td{background:#d6f3f9;font-weight:700;border-top:2px 
     <div class="sec-title">⚙️ Referência BCB</div>
     <div class="g2">
       <div class="inp-cell"><label>Projeção BCB<br>último Copom (%)</label>
-        <input type="number" id="sv_proj_cop" value="3.30" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
+        <input type="number" id="sv_proj_cop" value="3.50" step="0.05" min="0" max="15" class="cop" oninput="recalcSuav()"></div>
       <div class="inp-cell"><label>Próxima reunião</label>
         <select id="sv_prox_reuniao" onchange="recalcSuav()">
-          <option value="abr26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027">abr/26 (278ª) → HR: 4T2027</option>
-          <option value="jun26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027">jun/26 (279ª) → HR: 4T2027</option>
-          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (280ª) → HR: 1T2028</option>
-          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (281ª) → HR: 1T2028</option>
+          <option value="jun26" data-hprox="7" data-hcop="6" data-lprox="4T2027" data-lcop="3T2027" selected>jun/26 (280ª) → HR: 4T2027</option>
+          <option value="ago26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">ago/26 (281ª) → HR: 1T2028</option>
+          <option value="set26" data-hprox="8" data-hcop="7" data-lprox="1T2028" data-lcop="4T2027">set/26 (282ª) → HR: 1T2028</option>
         </select>
       </div>
     </div>
@@ -530,7 +528,7 @@ const TRI_RESULT = ['2T26','3T26','4T26','1T27','2T27','3T27','4T27','1T28'];
 // r.i = índice em D[] (0=jan/26, 1=mar/26, 2=abr/26...)
 // Mapeamento T+N → r.t: r.t = N+1 (ex: T+6=3T27 → r.t=7)
 const REUN = [
-  {l:'abr/26',t:3,i:2,tri:'2T26'}, {l:'jun/26',t:3,i:3,tri:'2T26'},
+  {l:'jun/26',t:3,i:3,tri:'2T26'},
   {l:'ago/26',t:4,i:4,tri:'3T26'}, {l:'set/26',t:4,i:5,tri:'3T26'},
   {l:'nov/26',t:5,i:6,tri:'4T26'}, {l:'dez/26',t:5,i:7,tri:'4T26'},
   {l:'jan/27',t:6,i:8,tri:'1T27'}, {l:'mar/27',t:6,i:9,tri:'1T27'},
@@ -539,18 +537,15 @@ const REUN = [
   {l:'nov/27',t:9,i:14,tri:'4T27'},{l:'dez/27',t:9,i:15,tri:'4T27'},
 ];
 
-// D[0] = trajetória Focus véspera 277ª (embutida no proj_cop=3,30)
-//   jan=0, mar=-50(esperado), abr-set=-50, nov-dez=-25 → fim-26=12,00%
-//   jan/27=0, depois -25x6, -12.5, -37.5, 0 → fim-27=10,50%
+// D[0] = trajetória Focus véspera 280ª (embutida no proj_cop=3,50)
+// s0=14,50 já reflete jan/26, mar/26 e abr/26 → índices 0, 1 e 2 zerados
+// jun=-25,ago=-50,set=-25,nov=-25,dez=-25 → fim-26=13,00%
+// jan/27=-25,mar=-25,mai=-50,jun=-25,ago=-25,set=-25,nov=-25,dez=0 → fim-27=11,00%
 // D[1] = começa igual a D[0]; usuário edita para testar
-// Invariante: D[0]=D[1] e demais iguais → proj = proj_cop = 3,30%
-// D[0] = trajetória Focus véspera 277ª (embutida no proj_cop=3,30)
-// s0=14,75 já reflete jan/26 e mar/26 → índices 0 e 1 zerados
-// abr=-50,jun=-50,ago=-50,set=-50,nov=-25,dez=-25 → fim-26=12,00%
-// jan/27=0,mar=-25,mai=-25,jun=-25,ago=-25,set=-12.5,nov=-37.5,dez=0 → fim-27=10,50%
+// Invariante: D[0]=D[1] e demais iguais → proj = proj_cop = 3,50%
 let D = [
-  [0,0,-50,-75,-25,-50,-25,-25,-25,0,-50,-25,-25,0,-37.5,-12.5],  // D[0] Base Copom
-  [0,0,-25,-50,-25,-50,-50,-25,-25,-25,-25,-25,-25,-25,-25,-25],  // D[1] Cenário Atual
+  [0,0,0,-25,-50,-25,-25,-25,-25,-25,-50,-25,-25,-25,-25,0],  // D[0] Base Copom (280ª)
+  [0,0,0,-25,-50,-25,-25,-25,-25,-25,-50,-25,-25,-25,-25,0],  // D[1] Cenário Atual
 ];
 
 // ═══════════════════════════════════════════════════
@@ -634,10 +629,9 @@ function calcSelicNec(s0, st, hprox){
 // RENDER TABELA SELIC
 // ═══════════════════════════════════════════════════
 function buildSelicTable(s0, hcop, hprox, tblId='selic_tbl'){
-  // Acumula jan/26 e mar/26 (passadas, índices 0 e 1)
+  // Acumula jan/26, mar/26 e abr/26 (passadas, índices 0, 1 e 2)
   let l0=s0, l1=s0;
-  l0=Math.max(4,Math.min(25,l0+D[0][0]/100)); l0=Math.max(4,Math.min(25,l0+D[0][1]/100));
-  l1=Math.max(4,Math.min(25,l1+D[1][0]/100)); l1=Math.max(4,Math.min(25,l1+D[1][1]/100));
+  for(let pi=0;pi<3;pi++){ l0=Math.max(4,Math.min(25,l0+D[0][pi]/100)); l1=Math.max(4,Math.min(25,l1+D[1][pi]/100)); }
 
   // hcop e hprox são T+N (ex: 6=T+6=3T27). Em REUN, r.t = T+N+1
   // mas agora REUN usa r.t diferente — vamos comparar via índice BCB_BASE
@@ -648,7 +642,7 @@ function buildSelicTable(s0, hcop, hprox, tblId='selic_tbl'){
 
   let h=`<thead><tr>
     <th>Reunião</th><th>Tri</th>
-    <th title="Trajetória da 277ª reunião (base do proj_cop)">Base Copom<br><small>(bps)</small></th>
+    <th title="Trajetória da 279ª reunião (base do proj_cop)">Base Copom<br><small>(bps)</small></th>
     <th title="Edite para testar">Atual<br><small>(bps)</small></th>
     <th>Selic Base<br><small>(%a.a.)</small></th>
     <th>Selic Atual<br><small>(%a.a.)</small></th>
@@ -1034,7 +1028,7 @@ function goTab(tab,btn){
 // 3 arrays de deltas editáveis pelo usuário (um por cenário)
 // Cenário 1: valores customizados (abr/26 a dez/27)
 // índices:    0  1   2    3    4    5    6    7    8    9   10   11  12  13  14  15
-const SC1_CUSTOM = [0,0,-30,-26,-24,-19,-14,-14,-14,-14,-11,-8,-5,-2,1,4];
+const SC1_CUSTOM = [0,0,0,-26,-24,-19,-14,-14,-14,-14,-11,-8,-5,-2,1,4];
 let SC = [
   [...D[1]],       // Atual — igual ao Modelo Completo
   [...SC1_CUSTOM], // Cenário 1 — valores customizados
@@ -1069,8 +1063,8 @@ function renderScenarios(){
   // Build Selic levels for each scenario
   function getLevels(deltas){
     let l = s0, lvls = [];
-    // past meetings (0,1) = 0
-    for(let i=0;i<2;i++) l = Math.max(4,Math.min(25,l+deltas[i]/100));
+    // past meetings (0,1,2) = jan/26, mar/26, abr/26
+    for(let i=0;i<3;i++) l = Math.max(4,Math.min(25,l+deltas[i]/100));
     REUN.forEach(r=>{
       l = Math.max(4,Math.min(25,l+deltas[r.i]/100));
       lvls.push(l);
@@ -1153,14 +1147,13 @@ function resetScenarios(){
 // DEFAULTS + INIT
 // ═══════════════════════════════════════════════════
 function resetAll(){
-  const defs={s0:14.75,cx0:5.20,cx1:5.20,br0:75,br1:75,cm0:83,cm1:83,
-    f26_0:4.10,f26_1:4.31,f27_0:3.80,f27_1:3.84,proj_cop:3.30,flat_sel:14.75};
+  const defs={s0:14.50,cx0:5.00,cx1:5.00,br0:75,br1:75,cm0:83,cm1:83,
+    f26_0:4.86,f26_1:4.86,f27_0:4.00,f27_1:4.00,proj_cop:3.50,flat_sel:14.50};
   Object.entries(defs).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v;});
   document.getElementById('prox_reuniao').selectedIndex=0;
-  // D[0] = Selic Base (Último Copom): fim-26=12,25% fim-27=10,50%
-  D[0]=[0,0,-50,-75,-25,-50,-25,-25,-25,0,-50,-25,-25,0,-37.5,-12.5];
-  // D[1] = Selic Cenário (Atual/Focus): fim-26=12,50% fim-27=10,50%
-  D[1]=[0,0,-25,-50,-25,-50,-50,-25,-25,-25,-25,-25,-25,-25,-25,-25];
+  // D[0] = D[1] = Base Copom (280ª): fim-26=13,00% fim-27=11,00%
+  D[0]=[0,0,0,-25,-50,-25,-25,-25,-25,-25,-50,-25,-25,-25,-25,0];
+  D[1]=[0,0,0,-25,-50,-25,-25,-25,-25,-25,-50,-25,-25,-25,-25,0];
   recalc();
 }
 
@@ -1244,8 +1237,8 @@ async function updateFromBCB(btn){
           console.log('Selic item keys:', Object.keys(sample));
           console.log('Sample Selic:', JSON.stringify(sample).substring(0, 400));
           
-          // Data de corte: 18/03/2026 (último Copom)
-          const dtCopomStr = '2026-03-18';
+          // Data de corte: 16/04/2026 (último Copom — 279ª reunião)
+          const dtCopomStr = '2026-04-16';
           
           // Agrupa por Reuniao e pega:
           // - Mais recente (para Cenário)
@@ -1438,13 +1431,13 @@ async function updateFromBCB(btn){
       console.warn('⚠️ Selic NÃO atualizada');
     }
     // Atualizar D[1] com trajetória completa de reuniões futuras
-    if(selicLevels.length > 1) {
-      // Referência: nível em R2/2026 (mar/26, dIdx=1). Se ausente, usa selicCenario como s0.
-      const refEntry = selicLevels.find(e => e.dIdx === 1) || selicLevels.find(e => e.dIdx === 0);
-      let prevLevel = refEntry ? refEntry.level : (selicCenario || parseFloat(document.getElementById('s0')?.value || 14.75));
+    if(selicLevels.length > 0) {
+      // Usa s0 (Selic atual pós-último Copom) como referência
+      const s0Val = parseFloat(document.getElementById('s0')?.value) || 14.50;
+      let prevLevel = s0Val;
       const newD1 = [...D[1]];
       selicLevels.forEach(e => {
-        if(e.dIdx >= 2) {
+        if(e.dIdx >= 3) { // jan/26(0), mar/26(1), abr/26(2) já realizados
           newD1[e.dIdx] = Math.round((e.level - prevLevel) * 100); // bps
           prevLevel = e.level;
         }
